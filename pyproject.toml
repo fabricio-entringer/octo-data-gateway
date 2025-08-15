@@ -1,0 +1,46 @@
+[project]
+name = "external-data-gateway"
+description = "Gateway for external data access"
+version="0.0.1"
+authors = [
+    {name = "Fabricio Entringer", email = "fabricio@entringer.dev"}
+]
+
+
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn[standard]>=0.35.0",
+    "requests>=2.32.4",
+    "tinydb>=4.8.2"
+]
+
+
+requires-python = ">=3.12"
+
+
+[project.optional-dependencies]
+dev = [
+    "commitizen>=4.8.3",
+    "pytest>=8.4.1"
+]
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.1"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version"
+]
+bump_message = "bump: version $current_version → $new_version"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "plugin*"]
+exclude = ["log*", "assets*"]
+
+
+[build-system]
+requires = ["setuptools>=72.0", "wheel"]
+build-backend = "setuptools.build_meta"
