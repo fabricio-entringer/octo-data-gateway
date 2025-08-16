@@ -1,7 +1,7 @@
 from pydantic import BaseModel, computed_field
 from pydantic import Field
 from datetime import datetime
-from typing import TypeVar, Generic
+from typing import Optional, TypeVar, Generic
 import uuid
 import importlib.metadata
 
@@ -12,8 +12,8 @@ T = TypeVar("T", bound=BaseModel)
 class ErrorResponse(BaseModel):
     error_code: str = Field(..., 
         description="Error code representing the type of error.", 
-        pattern=r"^EAG_[A-Z]{2,10}_\d{3}$",
-        examples=["EAG_NET_001", "EAG_AUTH_002"]
+        pattern=r"^EAG-[A-Z]{2,10}-\d{3}$",
+        examples=["EAG-NET-001", "EAG-AUTH-002"]
     )
     error_message: str = Field(..., 
         description="Human-readable error message.",
@@ -27,7 +27,6 @@ class ErrorResponse(BaseModel):
         description="Category of the error (e.g., NETWORK, AUTHENTICATION).",
         examples=["NETWORK", "AUTHENTICATION"]
     )
-    retryable: bool = Field(..., description="Indicates if the error is retryable.")
 
 class Metadata(BaseModel):
     user_id: str = Field(None, 
@@ -55,6 +54,10 @@ class Metadata(BaseModel):
     )
     cached_source: bool = Field(False, 
         description="Indicates if the result came from cache."
+    )
+    path: Optional[str] = Field(None, 
+        description="The path of the API endpoint being accessed.",
+        examples=["/users", "/products"]
     )
 
     @computed_field
@@ -100,8 +103,7 @@ class Metadata(BaseModel):
             error_code=ex.code,
             error_message=ex.error_message,
             error_details=ex.tech_details,
-            category=ex.category.name,
-            retryable=ex.retryable
+            category=ex.category.name
         )
 
         self.timestamp_response_sent = datetime.now()

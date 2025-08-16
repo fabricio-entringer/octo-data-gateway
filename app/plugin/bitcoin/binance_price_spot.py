@@ -2,7 +2,7 @@ import requests
 from typing import Dict
 
 from app.api.bitcoin.service import BitcoinProcessor
-from app.api.bitcoin.bitcoin_exception import BitcoinError, BitcoinException
+from app.core.custom_exception import EAGCustomException, ErrorCode
 
 
 class BinancePriceSpot(BitcoinProcessor):
@@ -11,7 +11,8 @@ class BinancePriceSpot(BitcoinProcessor):
     """
     
     BASE_URL = "https://api.binance.com/api/v3"
-    
+    PROVIDER_NAME = "Binance"
+
     def get_bitcoin_price_external(self, currency: str = "USDT") -> Dict:
         """
         Fetch the current Bitcoin price from the Binance API.
@@ -29,20 +30,15 @@ class BinancePriceSpot(BitcoinProcessor):
             if currency == "USD":
                 # Binance uses USDT as the stablecoin equivalent to USD
                 currency = "USDT"
-                
+
             # Construct the symbol (BTC + currency pair)
             symbol = f"BTC{currency}"
             
-            # Make the API call to Binance
             url = f"{self.BASE_URL}/ticker/price"
             params = {"symbol": symbol}
             
-            print(f"Fetching Bitcoin price from Binance for symbol: {symbol}")
             response = requests.get(url, params=params, timeout=10)
-            print(f"Response status code: {response.status_code}")
-
-
-            # Check if the request was successful
+            
             if response.status_code == 200:
                 data = response.json()
                 
@@ -55,62 +51,59 @@ class BinancePriceSpot(BitcoinProcessor):
                         "source": self.get_source_name(),  
                     }
                 else:
-                    raise BitcoinException.from_error(
-                        BitcoinError.DATA_NOT_AVAILABLE,
-                        tech_details=f"Invalid response format from Binance API: {data}"
+                    raise EAGCustomException.from_error(
+                        error_code=ErrorCode.INVALID_RESPONSE,
+                        tech_details=f"Invalid response format from Binance API: {data}. The typical response should contain 'symbol' and 'price'.",
+                        http_status=response.status_code
                     )
-                    
+                
             elif response.status_code == 400:
-                # Handle invalid symbol or bad request
-                raise BitcoinException.from_error(
-                    BitcoinError.INVALID_CURRENCY,
+                raise EAGCustomException.from_error(
+                    error_code=ErrorCode.INVALID_REQUEST,
                     tech_details=f"Invalid currency pair BTC{currency}. Response: {response.text}"
                 )
-                
+                 
             elif response.status_code == 429:
-                # Handle rate limiting
-                raise BitcoinException.from_error(
-                    BitcoinError.RATE_LIMIT_EXCEEDED,
-                    tech_details=f"Binance API rate limit exceeded. Response: {response.text}"
+                raise EAGCustomException.from_error(
+                    error_code=ErrorCode.QUOTA_EXCEEDED,
+                    tech_details=f"API rate limit exceeded. Response: {response.text}"
                 )
-                
             else:
-                # Handle other HTTP errors
-                raise BitcoinException.from_error(
-                    BitcoinError.NETWORK_ERROR,
-                    tech_details=f"Binance API returned status code {response.status_code}. Response: {response.text}"
+                raise EAGCustomException.from_error(error_code=ErrorCode.UNKNOWN_NETWORK_ERROR,
+                    tech_details=f"API returned status code {response.status_code}. Response: {response.text}",
+                    http_status=response.status_code
                 )
-                
+            
         except requests.exceptions.Timeout:
-            raise BitcoinException.from_error(
-                BitcoinError.NETWORK_ERROR,
-                tech_details="Timeout occurred while connecting to Binance API"
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.CONNECTION_TIMEOUT,
+                tech_details="Timeout while fetching data from Binance API"
             )
             
         except requests.exceptions.ConnectionError:
-            raise BitcoinException.from_error(
-                BitcoinError.NETWORK_ERROR,
-                tech_details="Failed to connect to Binance API"
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.SERVICE_UNAVAILABLE,
+                tech_details="Connection error while fetching data from Binance API"
             )
-            
+        
         except requests.exceptions.RequestException as e:
-            raise BitcoinException.from_error(
-                BitcoinError.NETWORK_ERROR,
-                tech_details=f"Request error occurred: {str(e)}"
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.UNKNOWN_NETWORK_ERROR,
+                tech_details=str(e)
             )
-            
         except ValueError as e:
-            # Handle JSON parsing errors
-            raise BitcoinException.from_error(
-                BitcoinError.DATA_NOT_AVAILABLE,
-                tech_details=f"Failed to parse JSON response from Binance API: {str(e)}"
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.RESPONSE_PARSING_ERROR,
+                tech_details=str(e)
             )
-            
+        
         except Exception as e:
-            # Handle any other unexpected errors
-            raise BitcoinException.from_error(
-                BitcoinError.DATA_NOT_AVAILABLE,
-                tech_details=f"Unexpected error occurred: {str(e)}"
+            if isinstance(e, EAGCustomException):
+                raise e  # Re-raise custom exceptions
+            
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.INTERNAL_SERVER_ERROR,
+                tech_details=str(e)
             )
 
 
@@ -121,4 +114,4 @@ class BinancePriceSpot(BitcoinProcessor):
         Returns:
             str: The name of the source (Binance)
         """
-        return "Binance"
+        return self.PROVIDER_NAME

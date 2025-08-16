@@ -1,7 +1,6 @@
 from abc import abstractmethod
 
-from app.api.bitcoin.bitcoin_exception import BitcoinError, BitcoinException
-from app.core.custom_exception import EAGCustomException
+from app.core.custom_exception import EAGCustomException, ErrorCode
 from .schema import BitcoinPrice
 
 class BitcoinProcessor:
@@ -29,33 +28,53 @@ bitcoin_processors = []
 
 def extract_bitcoin_price(currency: str = "EUR") -> BitcoinPrice:
     """
-    Fetches the current Bitcoin price in the specified currency from a public API.
+    Attempts to fetch the current Bitcoin price in the specified currency using all registered processors.
     Returns:
-        float: The current price of Bitcoin in the specified currency.
+        BitcoinPrice: The current price of Bitcoin in the specified currency.
     Raises:
-        Exception: If the API request fails or the response is invalid.
+        BitcoinException: If all processors fail or return invalid data.
+    Notes:
+        - Tries each processor in order until one succeeds.
+        - If all fail, raises a BitcoinException with details from all sources.
+        - Errors from each processor are collected for diagnostics.
     """
     
-    try:
-        print("Extracting Bitcoin price from registered processors...")
-        result = bitcoin_processors[0].get_bitcoin_price_external(currency)
+    exceptions = []
+    for processor in bitcoin_processors:
+        try:
+            result = processor.get_bitcoin_price_external(currency)
 
-        print(f"Extracted Bitcoin price: {result}")
+            if result is not None and 'price' in result and 'currency' in result:
+                return BitcoinPrice(price=result['price'], 
+                                    currency=result['currency'][:3], 
+                                    source=result.get('source', 'unknown'))
+            else:
+                exceptions.append({
+                    "source": processor.get_source_name(),
+                    "error": EAGCustomException.from_error(
+                        error_code=ErrorCode.INVALID_RESPONSE,
+                        tech_details=f"API returned invalid data: {result}",
+                        http_status=502
+                    )
+                })
+                
+        except EAGCustomException as e:
+            exceptions.append({
+                "source": processor.get_source_name(),
+                "error": str(e)
+            })
 
-        if result is not None and 'price' in result and 'currency' in result:
-            return BitcoinPrice(price=result['price'], 
-                                currency=result['currency'][:3], 
-                                source=result.get('source', 'unknown'))
-        else:
-            raise BitcoinException.from_error(BitcoinError.DATA_NOT_AVAILABLE,
-                                              tech_details=f"API returned invalid data: {result}")
-        
-    except EAGCustomException as e:
-        print(f"Error extracting Bitcoin price: {e}")
-        raise BitcoinException.from_error(BitcoinError.DATA_NOT_AVAILABLE, tech_details=str(e))
-    except Exception as e:
-        print(f"Unexpected error extracting Bitcoin price: {e}")
-        raise BitcoinException.from_error(BitcoinError.UNEXPECTED_ERROR, tech_details=str(e))
+        except Exception as e:
+            exceptions.append({
+                "source": processor.get_source_name(),
+                "error": str(e)
+            })
+
+        raise EAGCustomException.from_error(
+            error_code=ErrorCode.SERVICE_UNAVAILABLE,
+            tech_details=f"Failed to fetch Bitcoin price from all sources: {exceptions}"
+        )
+    
 
 
 # Register plugins when module is imported

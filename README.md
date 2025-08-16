@@ -210,8 +210,7 @@ The gateway uses structured error responses with specific error codes:
       "error_code": "EAG_BTC_002",
       "error_message": "Bitcoin price data is not available.",
       "error_details": "Timeout occurred while fetching data",
-      "category": "SERVICE",
-      "retryable": true
+      "category": "SERVICE"
     }
   }
 }
