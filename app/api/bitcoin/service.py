@@ -53,8 +53,7 @@ def extract_bitcoin_price(currency: str = "EUR") -> BitcoinPrice:
                     "source": processor.get_source_name(),
                     "error": EAGCustomException.from_error(
                         error_code=ErrorCode.INVALID_RESPONSE,
-                        tech_details=f"API returned invalid data: {result}",
-                        http_status=502
+                        tech_details=f"API returned invalid data: {result}"
                     )
                 })
                 

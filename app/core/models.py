@@ -9,7 +9,7 @@ from .custom_exception import EAGCustomException
 
 T = TypeVar("T", bound=BaseModel)
 
-class ErrorResponse(BaseModel):
+class ErrorDetail(BaseModel):
     error_code: str = Field(..., 
         description="Error code representing the type of error.", 
         pattern=r"^EAG-[A-Z]{2,10}-\d{3}$",
@@ -49,7 +49,7 @@ class Metadata(BaseModel):
         description="Version of the API used for the request.",
         examples=["v1", "v2"]
     )
-    error_info: ErrorResponse = Field(None, 
+    error_info: ErrorDetail = Field(None, 
         description="Detailed error information if the request failed."
     )
     cached_source: bool = Field(False, 
@@ -99,7 +99,7 @@ class Metadata(BaseModel):
         Marks the request as failed and sets the error message.
         """
 
-        self.error_info = ErrorResponse(
+        self.error_info = ErrorDetail(
             error_code=ex.code,
             error_message=ex.error_message,
             error_details=ex.tech_details,
@@ -109,11 +109,4 @@ class Metadata(BaseModel):
         self.timestamp_response_sent = datetime.now()
         return self
 
-
-class ApiResponse(BaseModel, Generic[T]):
-    data: T = Field(..., 
-        description="The actual data returned by the API."
-    )
-    metadata: Metadata = Field(..., 
-        description="Metadata about the API request and response."
-    )
+    

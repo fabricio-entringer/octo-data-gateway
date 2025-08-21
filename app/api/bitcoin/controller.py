@@ -12,10 +12,7 @@ from app.core.context import request_metadata_var
 from fastapi.responses import JSONResponse
     
 router = APIRouter()
-
 logger = Logger.get_logger()
-
-
 
 @router.get("/price", 
             response_model=BitcoinPriceResponse,
@@ -27,24 +24,33 @@ async def get_bitcoin_price(currency: Optional[str] = Query(default="USD",
                             source: Optional[str] = Query(default=None,
                                                            description="Source to get the Bitcoin price from (default: binance)"),
                             accept_cache: Optional[bool] = Query(default=True,
-                                                                  description="Whether to accept cached responses (default: True)")
+                                                                  description="Whether to accept cached responses (default: True)"),
                             ) -> BitcoinPriceResponse:
-    """
-    Get the current Bitcoin price.
-    """        
-    try:
-        metadata = request_metadata_var.get()
-        bitcoin_price = service.extract_bitcoin_price(currency=currency)
-
-    except EAGCustomException as e:
-        logger.error("Error occurred while fetching Bitcoin price", extra={"error": e.for_log()})
-        return JSONResponse(
-            status_code=e.http_status,
-            content=jsonable_encoder(metadata.finish_failed_request(e))
-        )
+        """
+        Get the current Bitcoin price.
+        """
+        logger.info("Request received for Bitcoin price", extra={
+            "currency": currency,
+            "source": source,
+            "accept_cache": accept_cache
+        })
+        try:
+            
+            metadata = request_metadata_var.get()
+            logger.info("Calling service.extract_bitcoin_price", extra={"currency": currency, "source": source})
+            bitcoin_price = service.extract_bitcoin_price(currency=currency)
+            logger.info("Bitcoin price fetched successfully", extra={
+                "bitcoin_price_data": bitcoin_price.model_dump() if hasattr(bitcoin_price, "model_dump") else str(bitcoin_price)
+            })
+            return BitcoinPriceResponse(
+                bitcoin_price=bitcoin_price,
+                metadata=metadata.finish_successful_request()
+            )
+        
+        except EAGCustomException as e:
+            logger.error("EAGCustomException caught in get_bitcoin_price", extra={"error": e.for_log()})
+            return JSONResponse(
+                status_code=e.http_status,
+                content=jsonable_encoder(BitcoinPriceResponse(metadata=metadata.finish_failed_request(e)))
+            )
     
-    logger.info("Bitcoin price fetched successfully", extra={"bitcoin_price_data": bitcoin_price.model_dump()})
-    return BitcoinPriceResponse(
-        bitcoin_price=bitcoin_price,
-        metadata=metadata.finish_successful_request()
-    )

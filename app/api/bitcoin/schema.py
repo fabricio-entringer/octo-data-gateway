@@ -19,3 +19,7 @@ class BitcoinPrice(BaseModel):
 class BitcoinPriceResponse(BaseModel):
     bitcoin_price: Optional[BitcoinPrice] = Field(None, description="The current price of Bitcoin")
     metadata: Metadata = Field(..., description="Metadata about the API request and response")
+
+class BitcoinPriceListResponse(BaseModel):
+    bitcoin_prices: list[BitcoinPrice] = Field(default_factory=list, description="List of Bitcoin prices")
+    metadata: Metadata = Field(..., description="Metadata about the API request and response")

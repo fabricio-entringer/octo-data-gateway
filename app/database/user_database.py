@@ -1,4 +1,5 @@
 from pathlib import Path
+import uuid
 from tinydb import TinyDB, Query
 from .models import User, Scopes
 
@@ -8,8 +9,11 @@ data_dir.mkdir(exist_ok=True)
 db = TinyDB("./data/edg_db.json")
 user_table = db.table("users")
 
-def add_user(user: User):
+def add_user(user: User) -> User:
+    user.user_id = str(uuid.uuid4())
+    user.api_key = str(uuid.uuid4())
     user_table.insert(user.model_dump())
+    return user
 
 def get_user(user_id: str) -> User | None:
     user_data = user_table.get(Query().user_id == user_id)
@@ -27,10 +31,15 @@ def get_all_users() -> list[User]:
 
 def get_user_by_api_key(api_key: str) -> User | None:
     user_data = user_table.get(Query().api_key == api_key)
-    
     return User(**user_data) if user_data else None
 
+def get_user_by_name(name: str) -> User | None:
+    user_data = user_table.get(Query().name == name)
+    return User(**user_data) if user_data else None
 
+def get_user_by_email(email: str) -> User | None:
+    user_data = user_table.get(Query().email == email)
+    return User(**user_data) if user_data else None
 
 
 def ensure_default_user_exists() -> User | None:
