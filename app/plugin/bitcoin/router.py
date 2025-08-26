@@ -1,23 +1,23 @@
+from app.plugin.bitcoin.blockchain import BlockchainPriceSpot
+from app.plugin.bitcoin.coingecko import CoinGeckoPriceSpot
+from app.plugin.bitcoin.kraken import KrakenPriceSpot
+from app.plugin.bitcoin.menpool import MempoolPriceSpot
+from app.plugin.bitcoin.ninjas import NinjasPriceSpot
+from app.plugin.bitcoin.coinstats import CoinStatsPriceSpot
+from .coinbase_price_spot import CoinbasePriceSpot
 from .binance_price_spot import BinancePriceSpot
 
 
-def register_bitcoin_processor(bitcoin_processors: list):
-    """
-    Registers the BinancePriceSpot processor to the bitcoin_processors list.
-    This allows the application to use Binance as a source for Bitcoin price data.
-    
-    Args:
-        bitcoin_processors (list): List to register processors into
-    """
+def register_processor(bitcoin_processors: list, processor_class: type):
     try:
-        if not any(isinstance(proc, BinancePriceSpot) for proc in bitcoin_processors):
-            processor = BinancePriceSpot()
+        if not any(isinstance(proc, processor_class) for proc in bitcoin_processors):
+            processor = processor_class()
             bitcoin_processors.append(processor)
-            print("✅ BinancePriceSpot processor registered successfully.")
+            print(f"✅ {processor.get_source_name()} processor registered successfully.")
         else:
-            print("⚠️  BinancePriceSpot processor is already registered.")
+            print(f"⚠️  {processor_class.__name__} processor is already registered.")
     except Exception as e:
-        print(f"❌ Failed to register BinancePriceSpot processor: {e}")
+        print(f"❌ Failed to register {processor_class.__name__} processor: {e}")
 
 
 def register_all_processors(bitcoin_processors: list):
@@ -27,7 +27,12 @@ def register_all_processors(bitcoin_processors: list):
     Args:
         bitcoin_processors (list): List to register processors into
     """
-    register_bitcoin_processor(bitcoin_processors)
-    # Add more processors here in the future
-    # register_coinbase_processor(bitcoin_processors)
-    # register_kraken_processor(bitcoin_processors)
+    register_processor(bitcoin_processors, BinancePriceSpot)
+    register_processor(bitcoin_processors, CoinbasePriceSpot)
+    register_processor(bitcoin_processors, KrakenPriceSpot)
+    register_processor(bitcoin_processors, CoinGeckoPriceSpot)
+    register_processor(bitcoin_processors, BlockchainPriceSpot)
+    register_processor(bitcoin_processors, MempoolPriceSpot)
+    register_processor(bitcoin_processors, CoinStatsPriceSpot)
+    register_processor(bitcoin_processors, NinjasPriceSpot) 
+    

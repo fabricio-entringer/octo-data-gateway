@@ -37,6 +37,8 @@ class ErrorCode(Enum):
     UNAUTHORIZED_ACCESS = ("EAG-AUTH-001", "Unauthorized access to the resource.", ErrorCategory.AUTHENTICATION, 401)
     FORBIDDEN_ACCESS = ("EAG-AUTH-002", "Forbidden access to the resource.", ErrorCategory.AUTHENTICATION, 403)
     RESOURCE_NOT_FOUND = ("EAG-AUTH-003", "The requested resource was not found.", ErrorCategory.AUTHENTICATION, 404)
+    # Partial success
+    PARTIAL_CONTENT = ("EAG-SYS-003", "Partial content: some sources failed.", ErrorCategory.SYSTEM, 206)
 
 
     @property

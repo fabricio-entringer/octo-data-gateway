@@ -5,9 +5,21 @@ from typing import Optional, TypeVar, Generic
 import uuid
 import importlib.metadata
 
-from .custom_exception import EAGCustomException
+from .custom_exception import EAGCustomException, ErrorCode
 
 T = TypeVar("T", bound=BaseModel)
+
+class ReprMixin(BaseModel):
+    def __repr__(self):
+        # Usa model_dump() para Pydantic v2, dict() para v1
+        try:
+            data = self.model_dump()
+        except AttributeError:
+            data = self.dict()
+        return f"{self.__class__.__name__}({data})"
+
+    def __str__(self):
+        return self.__repr__()
 
 class ErrorDetail(BaseModel):
     error_code: str = Field(..., 
@@ -66,7 +78,7 @@ class Metadata(BaseModel):
         """
         Indicates if the request was successful based on the status code.
         """
-        return self.error_info is None
+        return self.error_info is None or self.error_info.error_code == ErrorCode.PARTIAL_CONTENT.code
     
     @computed_field
     @property
@@ -85,12 +97,12 @@ class Metadata(BaseModel):
 
         return importlib.metadata.version("external-data-gateway")
     
-    def finish_successful_request(self):
+    def finish_successful_request(self, error_info: ErrorDetail = None):
         """
         Marks the request as successful and sets the response timestamp.
         """
 
-        self.error_info = None
+        self.error_info = error_info
         self.timestamp_response_sent = datetime.now()
         return self
     
