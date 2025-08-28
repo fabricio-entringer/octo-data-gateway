@@ -1,0 +1,2 @@
+
+DATABASE_DIR = "./data"

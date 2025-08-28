@@ -10,6 +10,9 @@ from datetime import datetime, timedelta
 class UserService(UserValidationMixin):
 
     def add_user(self, user: User) -> User:
+        """
+        Add a new user to the system after validating the input data.
+        """
         
         self.validate_user_name_already_exists(user.name)
         self.validate_user_email_already_exists(user.email)

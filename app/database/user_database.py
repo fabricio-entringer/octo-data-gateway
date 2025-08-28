@@ -4,11 +4,12 @@ from time import timezone
 import uuid
 from tinydb import TinyDB, Query
 from .models import User, Scopes
+from app.database.config import DATABASE_DIR
 
-data_dir = Path("./data")
+data_dir = Path(DATABASE_DIR)
 data_dir.mkdir(exist_ok=True)
 
-db = TinyDB("./data/edg_db.json")
+db = TinyDB(data_dir / "edg_user_db.json")
 user_table = db.table("users")
 
 def add_user(user: User) -> User:

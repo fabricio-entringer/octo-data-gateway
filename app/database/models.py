@@ -66,3 +66,14 @@ class User(BaseModel):
         if self.api_key_expires_at is None:
             return True
         return self.api_key_expires_at > datetime.now()
+    
+    
+class UserUsage(BaseModel):
+    user_id: str = Field(..., description="The unique identifier for the user")
+    timestamp: datetime = Field(..., description="The timestamp of the usage event")
+    request_id: str = Field(..., description="The unique identifier for the request")
+    endpoint: str = Field(..., description="The API endpoint accessed")
+    method: str = Field(..., description="The HTTP method used")
+    status_code: int = Field(..., description="The HTTP status code returned")
+    response_time_ms: float = Field(..., description="The response time in milliseconds")
+    is_success: bool = Field(..., description="Whether the request was successful or not")

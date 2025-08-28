@@ -1,13 +1,15 @@
-import logging
 import importlib
 from fastapi import FastAPI, Request
+from importlib_metadata import metadata
 
 from app.core.models import Metadata
+from app.database.models import UserUsage
 
 from .api.routes import api_v1_router
 from .log.logging_config import Logger
 import uuid
 from app.core.context import request_metadata_var
+from fastapi import BackgroundTasks
 
 Logger.setup_logging()
 
@@ -19,7 +21,10 @@ api = FastAPI(
 
 @api.middleware("http")
 async def add_request_id_and_logging(request: Request, call_next):
-    # Gera ou lê o X-Request-ID do header
+    background_tasks = BackgroundTasks()
+    request.state.background_tasks = background_tasks
+
+    # Generate a unique request ID if not provided
     request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
     metadata = Metadata(request_id=request_id, path=request.url.path)
 
@@ -34,6 +39,20 @@ async def add_request_id_and_logging(request: Request, call_next):
             "status_code": response.status_code
         })
         response.headers["X-Request-ID"] = request_id
+
+        user_usage = UserUsage(
+            user_id=metadata.user_id or "anonymous",
+            timestamp=metadata.timestamp_request_received,
+            request_id=request_id,
+            endpoint=request.url.path,
+            method=request.method,
+            status_code=response.status_code,
+            response_time_ms=metadata.processing_time_ms,
+            is_success=metadata.is_successful
+        )
+        background_tasks.add_task(register_user_usage, user_usage)
+        response.background = background_tasks        
+
         return response
     
     except Exception as e:
@@ -43,7 +62,11 @@ async def add_request_id_and_logging(request: Request, call_next):
         })
         raise
     finally:
-        # Limpa o contexto após a requisição
+        # Clear the context after the request
         request_metadata_var.reset(token)
+
+def register_user_usage(usage: UserUsage):
+    from app.database import user_usage
+    user_usage.log_user_usage(usage)
     
 api.include_router(api_v1_router, prefix="/api/v1")

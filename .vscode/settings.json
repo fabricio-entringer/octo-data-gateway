@@ -3,7 +3,7 @@
   "rest-client.environmentVariables": {
     "$shared": {},
     "local": {
-      "x-api-key": "801b78fc-7b82-4e6f-9952-3e99e6723fc9",
+      "x-api-key": "261e8a59-6978-46b2-b3e5-ee4cce3c3be5",
       "base-url": "http://localhost:8000/api/v1"
     },
     "production": {

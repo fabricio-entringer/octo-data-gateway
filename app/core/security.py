@@ -33,7 +33,7 @@ async def get_api_user(scopes: list[Scopes], request: Request, api_key: str = De
 
     metadata.user_id = user.user_id
 
-    if user.api_key_expires_at and user.api_key_expires_at < metadata.timestamp_request_received:
+    if user.is_valid is False:
         logger.warning("API key expired. Http 401 Unauthorized", extra={
             "api_key": api_key,
             "http_status": status.HTTP_401_UNAUTHORIZED
