@@ -1,0 +1,17 @@
+
+## Bitcoin Price API Requests
+
+### Get Bitcoin Price in USD from CoinGecko
+GET {{base-url}}/bitcoin/price?currency=USD&source=coingecko
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+### Get Bitcoin Price in EUR from Binance
+GET {{base-url}}/bitcoin/price?currency=EUR&source=binance
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+### Get Bitcoin Price from all sources
+GET {{base-url}}/bitcoin/prices?currency=USD
+Content-Type: application/json
+x-api-key: {{x-api-key}}

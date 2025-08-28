@@ -1,0 +1,14 @@
+{
+  "makefile.configureOnOpen": false,
+  "rest-client.environmentVariables": {
+    "$shared": {},
+    "local": {
+      "x-api-key": "801b78fc-7b82-4e6f-9952-3e99e6723fc9",
+      "base-url": "http://localhost:8000/api/v1"
+    },
+    "production": {
+      "x-api-key": "PRODUCTION_API_KEY_HERE",
+      "base-url": "https://api.example.com/v1"
+    }
+  }
+}

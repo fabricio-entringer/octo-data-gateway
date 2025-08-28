@@ -1,0 +1,43 @@
+# List all users
+GET {{base-url}}/admin/users
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+###
+# Get a specific user
+GET {{base-url}}/admin/users/489fae0e-9074-4ed1-bcb6-ce6365a41861
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+###
+# Updating an user
+PUT {{base-url}}/admin/users/45ee7a6f-2aa7-4c60-84ac-2306699b868c
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+{
+  "name": "MASTER_user_2",
+  "email": "john.wdoe2@example.com",
+  "description": "Updated User 2",
+  "api_key": "new-api-key-1234",
+  "api_key_expires_at": "2025-08-28T13:25:01.659640"
+}
+
+###
+# Insert a new user
+POST {{base-url}}/admin/users
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+{
+  "name": "newuser_4",
+  "email": "newuser_4@example.com",
+  "description": "New User",
+  "scopes": ["BITCOIN"]
+}
+
+###
+# Deleting an user
+DELETE {{base-url}}/admin/users/5be5b522-4753-4b87-8642-fd3ff9a6ca03
+Content-Type: application/json
+x-api-key: {{x-api-key}}

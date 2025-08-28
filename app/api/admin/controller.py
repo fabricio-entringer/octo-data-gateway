@@ -8,12 +8,13 @@ from app.core.security import require_scopes
 from app.database.models import Scopes, User
 from app.log.logging_config import Logger
 from app.core.context import request_metadata_var
-from app.api.admin import service
-from app.api.admin.schema import UserResponse
+from app.api.admin.service import UserService
+from app.api.admin.schema import UserResponse, UserListResponse
 
 
 router = APIRouter()
 logger = Logger.get_logger()
+user_service = UserService()
 
 @router.post("/users", 
              status_code=201,
@@ -22,22 +23,19 @@ async def add_user(user: User = Body(...,
                                      description="User data to be added",
                                      media_type="application/json",
                                      example={
-                                         "name": "John Doe",
-                                         "description": "A sample user",
-                                         "email": "john.doe@example.com",
-                                         "scopes": [Scopes.ADMIN, Scopes.BITCOIN],
+                                        "name": "John Doe",
+                                        "description": "A sample user",
+                                        "email": "john.doe@example.com",
+                                        "scopes": [Scopes.ADMIN, Scopes.BITCOIN],
+                                        "api_key_expires_at": "2023-10-01T12:00:00Z"
                                      } 
                 )) -> UserResponse:
-    """
-    Endpoint to add a new user.
-    This is a placeholder implementation.
-    """
 
     logger.info("Adding user", extra={"user_data": user.model_dump()})
     try:
         
         metadata = request_metadata_var.get()
-        user = service.add_user(user)
+        user = user_service.add_user(user)
         logger.info("User added successfully", extra={"user_data": user.model_dump()})
         return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
 
@@ -55,42 +53,98 @@ async def add_user(user: User = Body(...,
 
 @router.get("/users/{user_id}", 
             status_code=200,
+            response_model=UserResponse,
             dependencies=[Depends(require_scopes([Scopes.ADMIN, Scopes.MASTER]))])
 async def get_user(user_id: str = Path(..., 
                                         description="The ID of the user to retrieve",
                                         example="123e4567-e89b-12d3-a456-426614174000")) -> UserResponse:
-    """
-    Endpoint to retrieve a user by ID.
-    This is a placeholder implementation.
-    """
-    # Here you would typically retrieve the user from your database
-    return {"message": "User retrieved successfully", "user_id": user_id}
+
+    logger.info("Retrieving user", extra={"user_id": user_id})
+    try:
+        metadata = request_metadata_var.get()
+        user = user_service.get_user_by_id(user_id)
+        logger.info("User retrieved successfully", extra={"user_data": user.model_dump()})
+        return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
+
+    except EAGCustomException as e:
+        logger.error("EAGCustomException caught in get_user", extra={"error": e.for_log()})
+        return JSONResponse(
+            status_code=e.http_status,
+            content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
+        )
 
 
-@router.delete("/users/{user_id}", status_code=204)
-async def delete_user(user_id: str):
-    """
-    Endpoint to delete a user by ID.
-    This is a placeholder implementation.
-    """
-    # Here you would typically delete the user from your database
-    return {"message": "User deleted successfully", "user_id": user_id}
+@router.delete("/users/{user_id}", 
+               status_code=202,
+               response_model=UserResponse,
+            dependencies=[Depends(require_scopes([Scopes.ADMIN, Scopes.MASTER]))])
+async def delete_user(user_id: str = Path(..., 
+                                          description="The ID of the user to delete",
+                                          example="123e4567-e89b-12d3-a456-426614174000")):
 
-@router.put("/users/{user_id}", status_code=200)
-async def update_user(user_id: str, new_data: dict):
-    """
-    Endpoint to update a user's information.
-    This is a placeholder implementation.
-    """
-    # Here you would typically update the user in your database
-    return {"message": "User updated successfully", "user_id": user_id, "new_data": new_data}
+    logger.info("Deleting user", extra={"user_id": user_id})
+    try:
+        metadata = request_metadata_var.get()
+        user_service.delete_user(user_id)
+        logger.info("User deleted successfully", extra={"user_id": user_id})
+        return JSONResponse(
+            status_code=202,
+            content=jsonable_encoder(UserResponse(metadata=metadata.finish_successful_request()))
+        )
+    except EAGCustomException as e:
+            logger.error("EAGCustomException caught in delete_user", extra={"error": e.for_log()})
+            return JSONResponse(
+                status_code=e.http_status,
+                content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
+            )
 
 
-@router.get("/users", status_code=200)
-async def list_users():
-    """
-    Endpoint to list all users.
-    This is a placeholder implementation.
-    """
-    # Here you would typically retrieve all users from your database
-    return {"message": "List of all users"}
+@router.put("/users/{user_id}", 
+            status_code=200,
+            response_model=UserResponse,
+            dependencies=[Depends(require_scopes([Scopes.ADMIN, Scopes.MASTER]))])
+async def update_user(user_id: str = Path(..., 
+                                          description="The ID of the user to update",
+                                          example="123e4567-e89b-12d3-a456-426614174000"), 
+                        user: User = Body(..., 
+                                            description="User data to be added",
+                                            media_type="application/json",
+                                            example={
+                                                "name": "John Doe",
+                                                "description": "A sample user",
+                                                "email": "john.doe@example.com",
+                                                "scopes": [Scopes.ADMIN, Scopes.BITCOIN],
+                                                "api_key_expires_at": "2023-10-01T12:00:00Z"
+                                            } )) -> UserResponse:
+    
+    logger.info("Updating user", extra={"user_id": user_id, "user_data": user.model_dump()})
+    try:
+        
+        metadata = request_metadata_var.get()
+        user = user_service.update_user(user_id, user)
+        logger.info("User updated successfully", extra={"user_data": user.model_dump()})
+        return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
+    
+    except EAGCustomException as e:
+            logger.error("EAGCustomException caught in update_user", extra={"error": e.for_log()})
+            return JSONResponse(
+                status_code=e.http_status,
+                content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
+            )
+
+@router.get("/users",
+            response_model=UserListResponse,
+            dependencies=[Depends(require_scopes([Scopes.ADMIN, Scopes.MASTER]))],
+            status_code=200)
+async def list_users() -> UserListResponse:
+    
+    logger.info("Listing users")
+    try:
+        metadata = request_metadata_var.get()
+        users = user_service.get_all_users()
+        logger.info("Users retrieved successfully", extra={"user_count": len(users)})
+        return UserListResponse(users=users, metadata=metadata.finish_successful_request())
+
+    except Exception as e:
+        logger.error("Unexpected error caught in list_users", extra={"error": str(e)})
+        raise e

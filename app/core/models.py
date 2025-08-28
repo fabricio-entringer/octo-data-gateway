@@ -1,7 +1,7 @@
 from pydantic import BaseModel, computed_field
 from pydantic import Field
 from datetime import datetime
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar
 import uuid
 import importlib.metadata
 

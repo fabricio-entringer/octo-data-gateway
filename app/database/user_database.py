@@ -1,4 +1,6 @@
+from datetime import datetime
 from pathlib import Path
+from time import timezone
 import uuid
 from tinydb import TinyDB, Query
 from .models import User, Scopes
@@ -12,15 +14,20 @@ user_table = db.table("users")
 def add_user(user: User) -> User:
     user.user_id = str(uuid.uuid4())
     user.api_key = str(uuid.uuid4())
-    user_table.insert(user.model_dump())
+    user.created_at = datetime.now()
+    user.updated_at = datetime.now()
+
+    user_table.insert(user.model_dump(mode="json"))
     return user
 
 def get_user(user_id: str) -> User | None:
     user_data = user_table.get(Query().user_id == user_id)
     return User(**user_data) if user_data else None
 
-def update_user(user_id: str, user: User):
-    user_table.update(user.model_dump(), Query().user_id == user_id)
+def update_user(user_id: str, user: User) -> User:
+    user.updated_at = datetime.now()
+    user_table.update(user.model_dump(mode="json"), Query().user_id == user_id)
+    return user
 
 def delete_user(user_id: str):
     user_table.remove(Query().user_id == user_id)

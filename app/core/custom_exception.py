@@ -20,6 +20,7 @@ class ErrorCode(Enum):
     INVALID_DATA = ("EAG-DAT-001", "The data provided is invalid.", ErrorCategory.DATA_VALIDATION, 400)
     RESPONSE_PARSING_ERROR = ("EAG-DAT-002", "Error occurred while parsing the response.", ErrorCategory.DATA_VALIDATION, 400)
     INVALID_RESPONSE = ("EAG-DAT-003", "The API response is invalid.", ErrorCategory.DATA_VALIDATION, 502)
+    DATA_NOT_FOUND = ("EAG-DAT-004", "The requested data was not found.", ErrorCategory.DATA_VALIDATION, 404)
     # General errors
     INTERNAL_SERVER_ERROR = ("EAG-SYS-001", "An internal server error occurred.", ErrorCategory.SYSTEM, 500)
     # Network errors
