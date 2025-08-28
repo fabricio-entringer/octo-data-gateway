@@ -1,0 +1,5 @@
+# IBAN Validation
+
+GET {{base-url}}/iban/validate?iban=DE89370400440532013000
+Content-Type: application/json
+x-api-key: {{x-api-key}}  

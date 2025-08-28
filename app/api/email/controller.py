@@ -1,8 +1,12 @@
 
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Path
+from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+
+from app.core.security import require_scopes
+from app.database.models import Scopes
 from .schema import EmailResponse
 from app.log.logging_config import Logger  
 from app.core.context import request_metadata_var
@@ -17,8 +21,12 @@ email_service = EmailService()
 
 @router.get("/validate/{email}", 
             status_code=200,
-            response_model=EmailResponse)
-async def validate_email(email: str) -> EmailResponse:
+            response_model=EmailResponse,
+            dependencies=[Depends(require_scopes([Scopes.EMAIL]))]
+)
+async def validate_email(email: str = Path(..., 
+                        description="The email address to validate",
+                        example="user@example.com")) -> EmailResponse:
     """
     Validate the given email address.
 

@@ -9,6 +9,8 @@ class Scopes(str, Enum):
     ADMIN = "ADMIN"
     BITCOIN = "BITCOIN"
     EXCHANGE_RATES = "EXCHANGE_RATES"
+    IBAN = "IBAN"
+    EMAIL = "EMAIL"
 
 class User(BaseModel):
     user_id: Optional[str] = Field(None, 
