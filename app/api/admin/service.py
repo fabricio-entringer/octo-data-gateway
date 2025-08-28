@@ -5,6 +5,7 @@ from app.database.models import User
 from app.database import user_database
 from app.core.custom_exception import EAGCustomException, ErrorCode
 from app.rules.UserValidationMixin import UserValidationMixin
+from datetime import datetime, timedelta
 
 class UserService(UserValidationMixin):
 
@@ -79,3 +80,26 @@ class UserService(UserValidationMixin):
        
         return user_database.update_user(user_id, existing_user)
 
+    def renew_api_key(self, user_id: str, days_valid: int, expires_at: str) -> User:
+        """
+        Renew the API key for a user by their ID.
+        """
+        user = user_database.get_user(user_id)
+        if user is None:
+            raise EAGCustomException.from_error(
+                error_code=ErrorCode.DATA_NOT_FOUND,
+                tech_details=f"User with ID {user_id} not found"
+            )
+        
+        if expires_at is not None:
+            try:
+                user.api_key_expires_at = datetime.strptime(expires_at, "%d/%m/%Y %H:%M:%S")
+            except ValueError:
+                raise EAGCustomException.from_error(
+                    error_code=ErrorCode.INVALID_DATA,
+                    tech_details=f"Invalid expires_at format: {expires_at}. Expected 'DD/MM/YYYY HH:MM:SS' format."
+                )
+        elif days_valid is not None:
+            user.api_key_expires_at = datetime.now() + timedelta(days=days_valid)      
+
+        return user_database.update_user(user_id, user)

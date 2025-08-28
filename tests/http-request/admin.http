@@ -41,3 +41,13 @@ x-api-key: {{x-api-key}}
 DELETE {{base-url}}/admin/users/5be5b522-4753-4b87-8642-fd3ff9a6ca03
 Content-Type: application/json
 x-api-key: {{x-api-key}}
+
+
+#### Renewing an user's API key
+POST {{base-url}}/admin/users/45ee7a6f-2aa7-4c60-84ac-2306699b868c/renew
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+{
+  "days_valid": 10
+}

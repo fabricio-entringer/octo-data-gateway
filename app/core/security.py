@@ -33,6 +33,16 @@ async def get_api_user(scopes: list[Scopes], request: Request, api_key: str = De
 
     metadata.user_id = user.user_id
 
+    if user.api_key_expires_at and user.api_key_expires_at < metadata.timestamp_request_received:
+        logger.warning("API key expired. Http 401 Unauthorized", extra={
+            "api_key": api_key,
+            "http_status": status.HTTP_401_UNAUTHORIZED
+        })
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API Key has expired. It has expired on {}, please request a new one.".format(user.api_key_expires_at),
+        )
+
     if not any(scope in user.scopes for scope in scopes):
         logger.warning("Insufficient permissions. Http 403 Forbidden", extra={
             "required_scopes": [str(s) for s in scopes],

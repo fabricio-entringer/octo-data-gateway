@@ -148,3 +148,31 @@ async def list_users() -> UserListResponse:
     except Exception as e:
         logger.error("Unexpected error caught in list_users", extra={"error": str(e)})
         raise e
+    
+@router.post("/users/{user_id}/renew", 
+             status_code=200,
+             response_model=UserResponse,
+             dependencies=[Depends(require_scopes([Scopes.ADMIN, Scopes.MASTER]))])
+async def renew_api_key(user_id: str = Path(..., 
+                                          description="The user ID for whom to renew the API key",
+                                          example="123e4567-e89b-12d3-a456-426614174000"), 
+                        days_valid: int = Body(30, 
+                                            description="Number of days the new API key will be valid for",
+                                            example=30),
+                        expires_at: str = Body(None,
+                                            description="Exact expiration date for the new API key in 'DD/MM/YYYY HH:MM:SS' format",
+                                            example="31/12/2023 23:59:59")) -> UserResponse:
+    
+    logger.info("Renewing API key", extra={"user_id": user_id, "days_valid": days_valid, "expires_at": expires_at})
+    try:
+        metadata = request_metadata_var.get()
+        user = user_service.renew_api_key(user_id, days_valid, expires_at)
+        logger.info("API key renewed successfully", extra={"user_id": user_id})
+        return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
+    
+    except EAGCustomException as e:
+            logger.error("EAGCustomException caught in renew_api_key", extra={"error": e.for_log()})
+            return JSONResponse(
+                status_code=e.http_status,
+                content=jsonable_encoder({"metadata": metadata.finish_failed_request(e)})
+            )
