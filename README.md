@@ -2,13 +2,21 @@
 
 <div align="center">
 
+<!-- Badges organized in two rows for clarity -->
+<p>
+  <a href="#"><img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="App Version"></a>
+  <a href="#"><img src="https://img.shields.io/badge/build-passing-blue.svg" alt="Build Status"></a>
+  <a href="#"><img src="https://img.shields.io/badge/coverage-unknown-blue.svg" alt="Coverage"></a>
+</p>
+<p>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.12+-blue.svg" alt="Python"></a>
+  <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.116+-green.svg" alt="FastAPI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"></a>
+</p>
+
 <img src="./assets/octo-data-logo-1.png" alt="Octo Data Gateway Logo" style="width:100%;max-height:430px;object-fit:cover;"/>
 
 **A robust, extensible gateway for external data access with built-in authentication, rate limiting, and plugin architecture.**
-
-[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-green.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
 
