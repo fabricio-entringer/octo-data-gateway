@@ -14,7 +14,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"></a>
 </p>
 
-<img src="./assets/octo-data-logo-1.png" alt="Octo Data Gateway Logo" style="width:100%;max-height:430px;object-fit:cover;"/>
+<img src="./assets/octo-data-logo-1.png" alt="Octo Data Gateway Logo" style="width:100%"/>
 
 **A robust, extensible gateway for external data access with built-in authentication, rate limiting, and plugin architecture.**
 
