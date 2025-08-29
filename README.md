@@ -16,7 +16,6 @@
 
 <img src="./assets/octo-data-logo-1.png" alt="Octo Data Gateway Logo" style="width:100%"/>
 
-**A robust, extensible gateway for external data access with built-in authentication, rate limiting, and plugin architecture.**
 
 </div>
 
