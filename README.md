@@ -1,6 +1,8 @@
-# 🌐 External Data Gateway
+# 🐙 Octo Data Gateway
 
 <div align="center">
+
+<img src="./assets/octo-data-logo-1.png" alt="Octo Data Gateway Logo" style="width:100%;max-height:430px;object-fit:cover;"/>
 
 **A robust, extensible gateway for external data access with built-in authentication, rate limiting, and plugin architecture.**
 
@@ -12,7 +14,7 @@
 
 ## 📋 Overview
 
-External Data Gateway is a centralized service that provides secure, standardized access to external data sources. It features a plugin architecture for easy extensibility, API key-based authentication with granular scopes, and comprehensive error handling with structured responses.
+Octo Data Gateway is a centralized service that provides secure, standardized access to external data sources. It features a plugin architecture for easy extensibility, API key-based authentication with granular scopes, and comprehensive error handling with structured responses.
 
 ### ✨ Key Features
 
@@ -123,36 +125,6 @@ GET /api/v1/bitcoin/price
 ```
 
 ## 🏗️ Architecture
-
-### Project Structure
-
-```
-external-data-gateway/
-├── app/                          # Main application package
-│   ├── api/                      # API layer
-│   │   ├── bitcoin/              # Bitcoin-specific endpoints
-│   │   │   ├── controller.py     # Route handlers
-│   │   │   ├── service.py        # Business logic
-│   │   │   ├── schema.py         # Pydantic models
-│   │   │   └── bitcoin_exception.py  # Custom exceptions
-│   │   └── routes.py             # API router configuration
-│   ├── core/                     # Core functionality
-│   │   ├── models.py             # Shared data models
-│   │   ├── security.py           # Authentication & authorization
-│   │   └── custom_exception.py   # Base exception classes
-│   ├── database/                 # Data layer
-│   │   ├── models.py             # Database models
-│   │   └── user_database.py      # User management
-│   ├── plugin/                   # Plugin system
-│   │   └── bitcoin/              # Bitcoin plugins
-│   │       ├── router.py         # Plugin registration
-│   │       └── binance_price_spot.py  # Binance implementation
-│   └── main.py                   # FastAPI application
-├── data/                         # Database files
-├── Makefile                      # Development commands
-├── pyproject.toml               # Project configuration
-└── run.py                       # Application entry point
-```
 
 ### Plugin System
 
