@@ -8,9 +8,9 @@ from fastapi.encoders import jsonable_encoder
 from app.core.security import require_scopes
 from app.database.models import Scopes
 from .schema import EmailResponse
-from app.log.logging_config import Logger  
+from app.core.logging_config import Logger  
 from app.core.context import request_metadata_var
-from app.core.custom_exception import EAGCustomException, ErrorCode
+from app.core.custom_exception import OctoDataException, ErrorCode
 from app.api.email.service import EmailService 
 
 
@@ -46,8 +46,8 @@ async def validate_email(email: str = Path(...,
                         metadata=metadata.finish_successful_request()
                     )))
         
-    except EAGCustomException as e:
-        logger.error("EAGCustomException caught in validate_email", extra={"error": e.for_log()})
+    except OctoDataException as e:
+        logger.error("OctoDataException caught in validate_email", extra={"error": e.for_log()})
         return JSONResponse(
             status_code=e.http_status,
             content=jsonable_encoder(EmailResponse(metadata=metadata.finish_failed_request(e)))

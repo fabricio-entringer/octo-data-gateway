@@ -15,3 +15,8 @@ x-api-key: {{x-api-key}}
 GET {{base-url}}/bitcoin/prices?currency=USD
 Content-Type: application/json
 x-api-key: {{x-api-key}}
+
+### Get available Bitcoin price from CoinStats
+GET {{base-url}}/bitcoin/price?currency=USD&source=coinstats
+Content-Type: application/json
+x-api-key: {{x-api-key}}

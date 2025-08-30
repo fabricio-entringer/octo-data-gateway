@@ -5,7 +5,7 @@ from typing import Optional, TypeVar
 import uuid
 import importlib.metadata
 
-from .custom_exception import EAGCustomException, ErrorCode
+from .custom_exception import OctoDataException, ErrorCode
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -106,7 +106,7 @@ class Metadata(BaseModel):
         self.timestamp_response_sent = datetime.now()
         return self
     
-    def finish_failed_request(self, ex: EAGCustomException):
+    def finish_failed_request(self, ex: OctoDataException):
         """
         Marks the request as failed and sets the error message.
         """

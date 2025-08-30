@@ -5,8 +5,8 @@ from app.core.models import Metadata
 
 class Iban(BaseModel):
     iban: str = Field(..., example="GB82WEST12345698765432")
-    valid: bool = Field(..., example=True)
-    country: Optional[str] = Field(None, example="GB")
+    is_valid: bool = Field(..., example=True)
+    country_code: Optional[str] = Field(None, example="GB")
     branch: Optional[str] = Field(None, example="123456")
     bban: Optional[str] = Field(None, example="WEST12345698765432")
     formatted_iban: Optional[str] = Field(None, example="GB82 WEST 1234 5698 7654 32")
@@ -14,13 +14,16 @@ class Iban(BaseModel):
     account_number: Optional[str] = Field(None, example="0532013000")
     bank_code: Optional[str] = Field(None, example="20070000")
     checksum: Optional[str] = Field(None, example="16")
+    account_type: Optional[str] = Field(None, example="CURRENT")
+    iban_length: Optional[int] = Field(None, example=22)
+    bic: Optional[str] = Field(None, example="DEUTDEFF")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "iban": "GB82WEST12345698765432",
-                "valid": True,
-                "country": "GB",
+                "is_valid": True,
+                "country_code": "GB",
                 "branch": "123456",
                 "bban": "WEST12345698765432",
                 "formatted_iban": "GB82 WEST 1234 5698 7654 32",
@@ -28,6 +31,9 @@ class Iban(BaseModel):
                 "account_number": "0532013000",
                 "bank_code": "20070000",
                 "checksum": "16",
+                "account_type": "CURRENT",
+                "iban_length": 22,
+                "bic": "DEUTDEFF"
             }
         }
 

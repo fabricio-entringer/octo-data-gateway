@@ -2,18 +2,19 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from fastapi.encoders import jsonable_encoder
 
-from app.api.bitcoin import service
+from app.api.bitcoin.service import BitcoinService
 from app.core.models import ErrorDetail
 from app.database.models import Scopes
 from .schema import BitcoinPriceListResponse, BitcoinPriceResponse
 from app.core.security import require_scopes
-from app.core.custom_exception import EAGCustomException, ErrorCode, ErrorCategory
-from app.log.logging_config import Logger
+from app.core.custom_exception import OctoDataException, ErrorCode, ErrorCategory
+from app.core.logging_config import Logger
 from app.core.context import request_metadata_var
 from fastapi.responses import JSONResponse
     
 router = APIRouter()
 logger = Logger.get_logger()
+service = BitcoinService()
 
 @router.get("/price", 
             response_model=BitcoinPriceResponse,
@@ -33,10 +34,10 @@ async def get_bitcoin_price(currency: Optional[str] = Query(default="USD",
             "source": source,
             "accept_cache": accept_cache
         })
+        metadata = request_metadata_var.get()
         try:
             
-            metadata = request_metadata_var.get()
-            bitcoin_price = service.get_bitcoin_price(service, source, currency)
+            bitcoin_price = service.get_bitcoin_price(source, currency)
             logger.info("Bitcoin price fetched successfully", extra={
                 "bitcoin_price_data": bitcoin_price.model_dump() if hasattr(bitcoin_price, "model_dump") else str(bitcoin_price)
             })
@@ -45,8 +46,8 @@ async def get_bitcoin_price(currency: Optional[str] = Query(default="USD",
                 metadata=metadata.finish_successful_request()
             )
         
-        except EAGCustomException as e:
-            logger.error("EAGCustomException caught in get_bitcoin_price", extra={"error": e.for_log()})
+        except OctoDataException as e:
+            logger.error("OctoDataException caught in get_bitcoin_price", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder(BitcoinPriceResponse(metadata=metadata.finish_failed_request(e)))
@@ -69,11 +70,9 @@ async def get_bitcoin_price_list(currency: Optional[str] = Query(default="USD",
             "currency": currency,
             "accept_cache": accept_cache
         })
+        metadata = request_metadata_var.get()
         try:
-            
-            metadata = request_metadata_var.get()
-
-            bitcoin_price_list, exceptions = service.get_bitcoin_price_list(service, currency)
+            bitcoin_price_list, exceptions = service.get_bitcoin_price_list(currency)
             if exceptions:
                 errors_info = ErrorDetail(
                     error_code=ErrorCode.PARTIAL_CONTENT.code,
@@ -96,8 +95,8 @@ async def get_bitcoin_price_list(currency: Optional[str] = Query(default="USD",
                  ))
             )
         
-        except EAGCustomException as e:
-            logger.error("EAGCustomException caught in get_bitcoin_price", extra={"error": e.for_log()})
+        except OctoDataException as e:
+            logger.error("OctoDataException caught in get_bitcoin_price", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder(BitcoinPriceResponse(metadata=metadata.finish_failed_request(e)))

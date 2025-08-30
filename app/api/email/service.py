@@ -5,7 +5,7 @@ import smtplib
 import socket
 from email_validator import EmailSyntaxError, validate_email, EmailNotValidError
 import dns.resolver
-from app.core.custom_exception import EAGCustomException, ErrorCode
+from app.core.custom_exception import OctoDataException, ErrorCode
 
 class EmailService:
 
@@ -36,7 +36,7 @@ class EmailService:
             validate_email(email, check_deliverability=False)
             return True
         except EmailSyntaxError as e:
-            raise EAGCustomException.from_error(error_code=ErrorCode.INVALID_DATA, 
+            raise OctoDataException.from_error(error_code=ErrorCode.INVALID_DATA, 
                                                 tech_details=str(e))
         except EmailNotValidError:
             return False

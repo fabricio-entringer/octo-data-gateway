@@ -2,7 +2,7 @@
 from fastapi import Depends, HTTPException, status
 from app.database import user_database
 from app.database.models import Scopes
-from ..log.logging_config import Logger
+from app.core.logging_config import Logger
 from app.core.context import request_metadata_var
 from fastapi import Request
 from fastapi.security import APIKeyHeader

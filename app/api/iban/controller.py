@@ -6,10 +6,11 @@ from fastapi.responses import JSONResponse
 
 from app.api.iban.schema import IbanResponse
 from app.api.iban.service import IbanService
-from app.core.custom_exception import EAGCustomException
+from app.core.custom_exception import OctoDataException
 from app.core.security import require_scopes
 from app.database.models import Scopes
-from app.log.logging_config import Logger
+from app.core.logging_config import Logger
+from app.core.context import request_metadata_var
 
 
 router = APIRouter()
@@ -36,14 +37,14 @@ async def validate_iban(iban: str = Query(...,
     """
     
     logger.info("Request received for IBAN validation", extra={"iban": iban})
+    metadata = request_metadata_var.get()
     try:
         iban_details = iban_service.validate_iban(iban=iban)
-        metadata = {"status": "success", "message": "IBAN validated successfully."}
         logger.info("IBAN validation successful", extra={"iban": iban, "details": jsonable_encoder(iban_details)})
         return IbanResponse(iban=iban_details, metadata=metadata)
 
-    except EAGCustomException as e:
-        logger.error("EAGCustomException caught in validate_iban", extra={"error": e.for_log()})
+    except OctoDataException as e:
+        logger.error("OctoDataException caught in validate_iban", extra={"error": e.for_log()})
         return JSONResponse(
             status_code=e.http_status,
             content=jsonable_encoder(IbanResponse(metadata=metadata.finish_failed_request(e)))

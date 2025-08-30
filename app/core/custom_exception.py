@@ -64,7 +64,7 @@ class ErrorCode(Enum):
     def __repr__(self):
         return f"ErrorCode.{self.code}"
 
-class EAGCustomException(Exception):
+class OctoDataException(Exception):
     code: str
     error_message: str
     tech_details: Optional[str]
@@ -97,7 +97,7 @@ class EAGCustomException(Exception):
         )
     
     def __repr__(self):
-        return f"EAGCustomException(code={self.code}, message={self.error_message}, tech_details={self.tech_details.replace('\\"', '"')}, category={self.category}, http_status={self.http_status})"
+        return f"OctoDataException(code={self.code}, message={self.error_message}, tech_details={self.tech_details.replace('\\"', '"')}, category={self.category}, http_status={self.http_status})"
     
     def for_log(self):
         return json.loads(json.dumps(self.__dict__))

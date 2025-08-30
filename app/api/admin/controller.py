@@ -3,10 +3,10 @@ from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from app.core.custom_exception import EAGCustomException
+from app.core.custom_exception import OctoDataException
 from app.core.security import require_scopes
 from app.database.models import Scopes, User
-from app.log.logging_config import Logger
+from app.core.logging_config import Logger
 from app.core.context import request_metadata_var
 from app.api.admin.service import UserService
 from app.api.admin.schema import UserResponse, UserListResponse
@@ -39,8 +39,8 @@ async def add_user(user: User = Body(...,
         logger.info("User added successfully", extra={"user_data": user.model_dump()})
         return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
 
-    except EAGCustomException as e:
-            logger.error("EAGCustomException caught in add_user", extra={"error": e.for_log()})
+    except OctoDataException as e:
+            logger.error("OctoDataException caught in add_user", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
@@ -66,8 +66,8 @@ async def get_user(user_id: str = Path(...,
         logger.info("User retrieved successfully", extra={"user_data": user.model_dump()})
         return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
 
-    except EAGCustomException as e:
-        logger.error("EAGCustomException caught in get_user", extra={"error": e.for_log()})
+    except OctoDataException as e:
+        logger.error("OctoDataException caught in get_user", extra={"error": e.for_log()})
         return JSONResponse(
             status_code=e.http_status,
             content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
@@ -91,8 +91,8 @@ async def delete_user(user_id: str = Path(...,
             status_code=202,
             content=jsonable_encoder(UserResponse(metadata=metadata.finish_successful_request()))
         )
-    except EAGCustomException as e:
-            logger.error("EAGCustomException caught in delete_user", extra={"error": e.for_log()})
+    except OctoDataException as e:
+            logger.error("OctoDataException caught in delete_user", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
@@ -125,8 +125,8 @@ async def update_user(user_id: str = Path(...,
         logger.info("User updated successfully", extra={"user_data": user.model_dump()})
         return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
     
-    except EAGCustomException as e:
-            logger.error("EAGCustomException caught in update_user", extra={"error": e.for_log()})
+    except OctoDataException as e:
+            logger.error("OctoDataException caught in update_user", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder(UserResponse(metadata=metadata.finish_failed_request(e)))
@@ -170,8 +170,8 @@ async def renew_api_key(user_id: str = Path(...,
         logger.info("API key renewed successfully", extra={"user_id": user_id})
         return UserResponse(user_data=user, metadata=metadata.finish_successful_request())
     
-    except EAGCustomException as e:
-            logger.error("EAGCustomException caught in renew_api_key", extra={"error": e.for_log()})
+    except OctoDataException as e:
+            logger.error("OctoDataException caught in renew_api_key", extra={"error": e.for_log()})
             return JSONResponse(
                 status_code=e.http_status,
                 content=jsonable_encoder({"metadata": metadata.finish_failed_request(e)})
