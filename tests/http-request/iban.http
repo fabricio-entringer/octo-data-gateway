@@ -1,5 +1,5 @@
 # IBAN Validation
 
-GET {{base-url}}/iban/validate?iban=DE89370400440532013000
+GET {{base-url}}/iban/validate?iban=LU46 0019 4855 4849 0000
 Content-Type: application/json
 x-api-key: {{x-api-key}}  

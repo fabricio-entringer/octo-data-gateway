@@ -19,11 +19,13 @@ class SchwiftyPlugin(PluginProcessor):
         try:
             iban = IBAN(iban_str)
             bic = iban.bic
+            country = iban.country
             return {
                 "iban": str(iban),
                 "bic": str(bic) if bic else None,
                 "is_valid": iban.is_valid,
                 "country_code": iban.country_code,
+                "country_name": country.name if country else None,
                 "branch": bic.branch_code if bic else None,
                 "bank_code": iban.bank_code,
                 "account_number": iban.account_code,
@@ -31,6 +33,7 @@ class SchwiftyPlugin(PluginProcessor):
                 "formatted_iban": iban.formatted,
                 "iban_length": len(str(iban)),
                 "bank_name": bic.bank_name if bic else None, 
+                "bank_short_name": bic.bank_short_name if bic else None,
                 "bban": str(iban.bban) if iban.bban else None,
                 "checksum": iban.checksum_digits if iban.checksum_digits else None
             }

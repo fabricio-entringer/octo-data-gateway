@@ -26,6 +26,7 @@ class IbanService(ProcessorByNameMixin):
                 bic=result.get('bic'),
                 is_valid=result.get('is_valid'),
                 country_code=result.get('country_code'),
+                country_name=result.get('country_name'),
                 branch=result.get('branch'),
                 bank_code=result.get('bank_code'),
                 account_number=result.get('account_number'),
@@ -33,6 +34,7 @@ class IbanService(ProcessorByNameMixin):
                 formatted_iban=result.get('formatted_iban'),
                 iban_length=result.get('iban_length'),
                 bank_name=result.get('bank_name'),
+                bank_short_name=result.get('bank_short_name'),
                 bban=result.get('bban'),
                 checksum=result.get('checksum')
             )
