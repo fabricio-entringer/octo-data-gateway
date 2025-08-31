@@ -1,0 +1,69 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in the REST API
+title: "[BUG] "
+labels: ["bug", "triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide details below to help us resolve your REST API issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Briefly describe the bug or unexpected behavior.
+      placeholder: Describe the issue...
+    validations:
+      required: true
+
+  - type: input
+    id: endpoint
+    attributes:
+      label: API Endpoint
+      description: The affected REST API endpoint (e.g. /users, /data)
+      placeholder: /your/endpoint
+    validations:
+      required: true
+
+  - type: textarea
+    id: request
+    attributes:
+      label: Request Example
+      description: Example request (method, headers, body, etc.)
+      placeholder: |
+        Method: POST
+        URL: /api/example
+        Headers: { ... }
+        Body: { ... }
+      render: shell
+
+  - type: textarea
+    id: response
+    attributes:
+      label: Response Example
+      description: Example response (status code, body, error message, etc.)
+      placeholder: |
+        Status: 500
+        Body: { "error": "..." }
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched for existing issues
+          required: true
+        - label: I have provided all the requested information
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might be helpful...
+
