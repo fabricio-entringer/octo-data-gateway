@@ -47,14 +47,3 @@ body:
         - Critical - Blocking my work
     validations:
       required: true
-
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: Checklist
-      description: Please confirm the following
-      options:
-        - label: I have searched for existing issues
-          required: true
-        - label: I have provided all the requested information
-          required: true
