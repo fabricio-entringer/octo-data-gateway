@@ -89,15 +89,17 @@ class OctoDataException(Exception):
         )
     
     def __str__(self):
+        tech_details_formatted = self.tech_details.replace('"', '"') if self.tech_details else 'N/A'
         return (
             f"[{self.code}] - {self.error_message}, "
             f"Category: {self.category}, "
             f"HTTP Status: {self.http_status}, "
-            f"Technical Details: {self.tech_details.replace('\"', '"') or 'N/A'}"
+            f"Technical Details: {tech_details_formatted}"
         )
     
     def __repr__(self):
-        return f"OctoDataException(code={self.code}, message={self.error_message}, tech_details={self.tech_details.replace('\\"', '"')}, category={self.category}, http_status={self.http_status})"
+        tech_details_formatted = self.tech_details.replace('"', '"') if self.tech_details else 'N/A'
+        return f"OctoDataException(code={self.code}, message={self.error_message}, tech_details={tech_details_formatted}, category={self.category}, http_status={self.http_status})"
     
     def for_log(self):
         return json.loads(json.dumps(self.__dict__))

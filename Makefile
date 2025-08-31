@@ -17,7 +17,7 @@ install:
 	$(VENV_PIP) install -e .[dev]
 
 test:
-	$(VENV_PYTHON) -m pytest
+	$(VENV_PYTHON) -m pytest -v --cov=.
 
 type-check:
 	$(VENV_PYTHON) -m mypy .
