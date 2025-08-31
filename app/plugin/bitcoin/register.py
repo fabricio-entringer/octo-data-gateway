@@ -16,8 +16,12 @@ __resource_list = [BinancePriceSpot, CoinbasePriceSpot, KrakenPriceSpot, CoinGec
 # Register plugins when module is imported
 def _register_plugins():
     """Register all available Bitcoin plugins."""
+
+    print("\033[94m💰 [Bitcoin] Starting registration of Bitcoin plugins...\033[0m")
     for processor in __resource_list:
         register_processor(bitcoin_processors, processor)
+
+    print("\033[94m💰 [Bitcoin] All Bitcoin plugins have been registered!\033[0m")
 
 
 # Auto-register plugins

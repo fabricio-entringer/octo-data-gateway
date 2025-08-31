@@ -11,8 +11,11 @@ __resource_list = [SchwiftyPlugin]
 def _register_plugins():
     """Register all available Iban plugins."""
 
+    print("\033[94m🏦 [IBAN] Starting registration of IBAN plugins...\033[0m")
     for processor in __resource_list:
         register_processor(iban_processors, processor)
+
+    print("\033[94m🏦 [IBAN] All IBAN plugins have been registered!\033[0m")
 
 
 # Auto-register plugins

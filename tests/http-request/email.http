@@ -1,5 +1,5 @@
 # Email Validation
 
-GET {{base-url}}/email/validate/moreira@gmail.com
+GET {{base-url}}/email/validate/moreira@entringer.com
 Content-Type: application/json
 x-api-key: {{x-api-key}}

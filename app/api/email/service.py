@@ -1,66 +1,37 @@
 
 import asyncio
 from app.api.email.schema import Email
-import smtplib
-import socket
-from email_validator import EmailSyntaxError, validate_email, EmailNotValidError
-import dns.resolver
+
+from app.api.iban.schema import Iban
+from app.api.mixin.processor_by_name import ProcessorByNameMixin
 from app.core.custom_exception import OctoDataException, ErrorCode
+from app.plugin.email.register import email_processors
+from app.plugin.processor import PluginProcessor
 
-class EmailService:
+class EmailService(ProcessorByNameMixin):
 
-    async def validate_email(self, email: str) -> Email:
-        return await asyncio.to_thread(self._validate_email_full, email)
+    async def validate_email(self, email: str, source: str= "python_email_validator") -> Email:
+        return await asyncio.to_thread(self._validate_email_full, email, source)
 
-    def _validate_email_full(self, email: str) -> Email:
-        emailResult = Email(
-            email=email,
-            valid_format=False,
-            valid_domain=False,
-            smtp_check=False,
-            error=None
-        )
+    def _validate_email_full(self, email: str, source: str) -> Email:
 
-        self._validate_email_format(email)
-        emailResult.valid_format = True
+        processor = self.get_processor_by_source_name(email_processors, source)
+        return self._validate_email(processor, email)
 
-        domain = email.split("@")[1]
-        emailResult.valid_domain = self._validate_email_domain(domain)
-        emailResult.smtp_check = self._validate_email_smtp(email)
+    def _validate_email(self, processor: PluginProcessor, email: str) -> Email:
+        result = processor.plugin_execute(params={"email": email})
+        if result is not None and 'email' in result:
+            return Email(
+                email=result.get('email'),
+                valid_format=result.get('valid_format'),
+                valid_domain=result.get('valid_domain'),
+                smtp_check=result.get('smtp_check')
+            )
+        else:
+            raise OctoDataException.from_error(
+                error_code=ErrorCode.INVALID_RESPONSE,
+                tech_details=f"Email plugin '{processor.get_source_name()}' returned invalid data: {result}"
+            )
 
-        return emailResult
 
-
-    def _validate_email_format(self, email: str) -> bool:
-        try:
-            validate_email(email, check_deliverability=False)
-            return True
-        except EmailSyntaxError as e:
-            raise OctoDataException.from_error(error_code=ErrorCode.INVALID_DATA, 
-                                                tech_details=str(e))
-        except EmailNotValidError:
-            return False
-        
-
-    def _validate_email_domain(self, domain: str) -> bool:
-        try:
-            mx_records = dns.resolver.resolve(domain, "MX")
-            return len(mx_records) > 0
-        
-        except Exception:
-            return False
-
-    def _validate_email_smtp(self, email: str) -> bool:
-        try:
-            mx_records = dns.resolver.resolve(email.split("@")[1], "MX")
-            mx_host = str(mx_records[0].exchange)
-            server = smtplib.SMTP(timeout=10)
-            server.connect(mx_host)
-            server.helo(socket.gethostname())
-            server.mail("test@example.com")
-            code, _ = server.rcpt(email)
-            server.quit()
-            return code == 250
-                
-        except Exception as e:
-            return False
+    
