@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 from app.api.mixin.processor_by_name import ProcessorByNameMixin
 from app.core.custom_exception import OctoDataException, ErrorCode
+from app.plugin import processor
 from .schema import BitcoinPrice
 from app.plugin.bitcoin.register import bitcoin_processors
 from app.plugin.processor import PluginProcessor
@@ -27,7 +28,6 @@ class BitcoinService(ProcessorByNameMixin):
                     "source": processor.get_source_name(),
                     "error": str(e)
                 })
-
             except Exception as e:
                 exceptions.append({
                     "source": processor.get_source_name(),

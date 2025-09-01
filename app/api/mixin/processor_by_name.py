@@ -8,7 +8,6 @@ class ProcessorByNameMixin:
     """
 
     def get_processor_by_source_name(self, processor_list: list[PluginProcessor], source: str) -> PluginProcessor:
-        print(processor_list)
         processor = next((p for p in processor_list if p.get_source_name().lower() == source.lower()), None)
 
         if processor is None:

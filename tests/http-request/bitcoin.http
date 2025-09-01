@@ -7,7 +7,7 @@ Content-Type: application/json
 x-api-key: {{x-api-key}}
 
 ### Get Bitcoin Price in EUR from Binance
-GET {{base-url}}/bitcoin/price?currency=EUR&source=binance
+GET {{base-url}}/bitcoin/price?currency=USD&source=binance
 Content-Type: application/json
 x-api-key: {{x-api-key}}
 
