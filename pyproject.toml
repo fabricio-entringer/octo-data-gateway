@@ -1,5 +1,5 @@
 [project]
-name = "external-data-gateway"
+name = "octo-data-gateway"
 description = "Gateway for external data access"
 version="0.0.1"
 authors = [
@@ -14,7 +14,8 @@ dependencies = [
     "tinydb>=4.8.2",
     "python-json-logger>=3.3.0",
     "email_validator>=2.3.0",
-    "schwifty>=2025.7.0"
+    "schwifty>=2025.7.0",
+    "rest-health>=0.1.1"
 ]
 
 requires-python = ">=3.12"

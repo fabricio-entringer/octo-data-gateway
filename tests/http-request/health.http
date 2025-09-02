@@ -1,0 +1,5 @@
+### Health Check
+# This file contains HTTP requests to test the health check endpoint of the API.
+
+GET http://localhost:8000/health
+Accept: application/json

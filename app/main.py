@@ -10,13 +10,15 @@ from app.core.logging_config import Logger
 import uuid
 from app.core.context import request_metadata_var
 from fastapi import BackgroundTasks
+from rest_health import HealthCheck
+from rest_health.adapters.fastapi import create_fastapi_healthcheck
 
 Logger.setup_logging()
 
 api = FastAPI(
-    title="External Data Gateway API",
+    title="Octo Data Gateway API",
     description="API for accessing external data sources",
-    version=importlib.metadata.version("external-data-gateway")
+    version=importlib.metadata.version("octo-data-gateway")
 )
 
 @api.middleware("http")
@@ -70,3 +72,7 @@ def register_user_usage(usage: UserUsage):
     user_usage.log_user_usage(usage)
     
 api.include_router(api_v1_router, prefix="/api/v1")
+
+health = HealthCheck()
+health_router = create_fastapi_healthcheck(health)
+api.include_router(health_router)
