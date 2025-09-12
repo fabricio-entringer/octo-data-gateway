@@ -1,11 +1,11 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import jsonable_encoder
 
 from app.api.bitcoin.service import BitcoinService
 from app.core.models import ErrorDetail
 from app.database.models import Scopes
-from .schema import BitcoinPriceListResponse, BitcoinPriceResponse
+from .schema import BitcoinBalanceRequest, BitcoinBalanceResponse, BitcoinPriceListResponse, BitcoinPriceResponse
 from app.core.security import require_scopes
 from app.core.custom_exception import OctoDataException, ErrorCode, ErrorCategory
 from app.core.logging_config import Logger
@@ -112,3 +112,57 @@ async def get_bitcoin_sources() -> list[str]:
     Get the list of available Bitcoin price sources.
     """
     return service.get_bitcoin_sources()
+
+
+@router.post("/balance", 
+             response_model=BitcoinPriceResponse,
+             dependencies=[Depends(require_scopes([Scopes.BITCOIN]))]
+)
+async def get_bitcoin_balance(balance_request: BitcoinBalanceRequest = Body(...,
+                                                                            description="Request body for getting Bitcoin balance",
+                                                                            example={
+                                                                                "addresses": [
+                                                                                     "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                                                                                     "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
+                                                                                ],
+                                                                                "fiat_currency": "USD",
+                                                                                "accept_cache": True
+                                                                            }
+                                                                            )) -> BitcoinPriceResponse:
+        
+        logger.info("Request received for Bitcoin balance", extra={
+            "addresses": balance_request.addresses,
+            "fiat_currency": balance_request.fiat_currency,
+            "accept_cache": balance_request.accept_cache
+        })
+        metadata = request_metadata_var.get()
+        try:
+
+            balance_list, exceptions = service.get_bitcoin_balance(balance_request.addresses, balance_request.fiat_currency)
+            if exceptions:
+                errors_info = ErrorDetail(
+                    error_code=ErrorCode.PARTIAL_CONTENT.code,
+                    error_message="Partial content: some sources failed.",
+                    error_details=str(exceptions),
+                    category=ErrorCategory.SYSTEM
+                )
+
+            logger.info("Bitcoin balance fetched successfully", extra={
+                "balance_data": balance_list,
+                "exceptions": exceptions
+            })
+
+            return JSONResponse(
+                 status_code=206 if exceptions else 200,
+                 content=jsonable_encoder(BitcoinBalanceResponse(
+                     balance=balance_list if balance_list else None,
+                     metadata=metadata.finish_successful_request(errors_info if exceptions else None)
+                 ))
+            )
+
+        except OctoDataException as e:
+            logger.error("OctoDataException caught in get_bitcoin_balance", extra={"error": e.for_log()})
+            return JSONResponse(
+                status_code=e.http_status,
+                content=jsonable_encoder(BitcoinPriceResponse(metadata=metadata.finish_failed_request(e)))
+            )

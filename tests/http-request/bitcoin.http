@@ -20,3 +20,16 @@ x-api-key: {{x-api-key}}
 GET {{base-url}}/bitcoin/price?currency=USD&source=coinstats
 Content-Type: application/json
 x-api-key: {{x-api-key}}
+
+### Get Bitcoin Balance for addresses in USD
+POST {{base-url}}/bitcoin/balance
+Content-Type: application/json
+x-api-key: {{x-api-key}}
+
+{
+  "addresses": [
+    "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+    "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+  ],
+  "fiat_currency": "USD"
+}
