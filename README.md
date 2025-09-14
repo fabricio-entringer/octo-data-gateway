@@ -66,6 +66,8 @@ Octo Data Gateway is a centralized service that provides secure, standardized ac
 
 The API will be available at `http://localhost:8000` with automatic documentation at `http://localhost:8000/docs`.
 
+*Docker image will be available soon.
+
 ## 🔑 Authentication
 
 The gateway uses API key authentication with scope-based permissions. A default master user is automatically created on first run:

@@ -4,14 +4,15 @@ on:
   pull_request:
     branches:
       - develop
-    # Exclude PRs from master branch
-    # This works by checking if the head ref (source branch) is NOT master
-    # GitHub Actions doesn't have a direct way to exclude source branches,
-    # so we'll handle this in a job condition
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    # Add permissions for the coverage action
+    permissions:
+      contents: read
+      pull-requests: write
     
     # Skip if the PR is from master branch
     if: github.head_ref != 'master'
@@ -23,6 +24,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -51,18 +54,9 @@ jobs:
         .venv/bin/python -m pytest -v --cov=. --cov-report=xml --cov-report=term
         
     - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v2.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        
-    - name: SonarQube Quality Gate Check
-      uses: sonarqube-quality-gate-action@master
-      timeout-minutes: 5
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -80,3 +74,4 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         MINIMUM_GREEN: 80
         MINIMUM_ORANGE: 60
+        COVERAGE_PATH: "."
