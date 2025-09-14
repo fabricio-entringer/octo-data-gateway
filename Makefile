@@ -26,6 +26,11 @@ clean:
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	rm -rf .tox/
+	rm -rf htmlcov/
+	rm .coverage
 	find . -type d -name __pycache__ -delete
 	find . -type f -name "*.pyc" -delete
 
