@@ -1,0 +1,82 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    branches:
+      - develop
+    # Exclude PRs from master branch
+    # This works by checking if the head ref (source branch) is NOT master
+    # GitHub Actions doesn't have a direct way to exclude source branches,
+    # so we'll handle this in a job condition
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # Skip if the PR is from master branch
+    if: github.head_ref != 'master'
+    
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Create virtual environment
+      run: |
+        python -m venv .venv
+        
+    - name: Install dependencies
+      run: |
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install -e .[dev]
+        
+    - name: Run tests with coverage
+      run: |
+        .venv/bin/python -m pytest -v --cov=. --cov-report=xml --cov-report=term
+        
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v2.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        
+    - name: SonarQube Quality Gate Check
+      uses: sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      if: always()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        
+    - name: Comment PR with coverage
+      uses: py-cov-action/python-coverage-comment-action@v3
+      if: always()
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+        MINIMUM_GREEN: 80
+        MINIMUM_ORANGE: 60
