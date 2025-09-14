@@ -37,6 +37,24 @@ include = ["api*", "plugin*"]
 exclude = ["log*", "assets*"]
 
 
+[tool.coverage.run]
+relative_files = true
+source = ["app"]
+omit = [
+    "tests/*",
+    "*/__init__.py",
+    ".venv/*",
+    "run.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError"
+]
+
 [build-system]
 requires = ["setuptools>=72.0", "wheel"]
 build-backend = "setuptools.build_meta"

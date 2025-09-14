@@ -9,6 +9,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    # Add permissions for the coverage action
+    permissions:
+      contents: read
+      pull-requests: write
+    
     # Skip if the PR is from master branch
     if: github.head_ref != 'master'
     
@@ -69,3 +74,4 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         MINIMUM_GREEN: 80
         MINIMUM_ORANGE: 60
+        COVERAGE_PATH: "."
