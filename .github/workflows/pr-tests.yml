@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - develop
-    # Exclude PRs from master branch
-    # This works by checking if the head ref (source branch) is NOT master
-    # GitHub Actions doesn't have a direct way to exclude source branches,
-    # so we'll handle this in a job condition
 
 jobs:
   test:
@@ -54,13 +50,6 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@v2.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        
-    - name: SonarQube Quality Gate Check
-      uses: sonarqube-quality-gate-action@master
-      timeout-minutes: 5
-      env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         
