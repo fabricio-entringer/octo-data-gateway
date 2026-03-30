@@ -1,0 +1,17 @@
+.venv/
+data/
+logs/
+.git/
+.github/
+tests/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.env
+.envrc
+assets/
