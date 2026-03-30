@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Scopes(str, Enum):
@@ -67,7 +67,7 @@ class User(BaseModel):
     def is_valid(self) -> bool:
         if self.api_key_expires_at is None:
             return True
-        return self.api_key_expires_at > datetime.now()
+        return self.api_key_expires_at > datetime.now(timezone.utc)
     
     
 class UserUsage(BaseModel):

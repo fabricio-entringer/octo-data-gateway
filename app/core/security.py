@@ -43,7 +43,7 @@ async def get_api_user(scopes: list[Scopes], request: Request, api_key: str = De
             detail="API Key has expired. It has expired on {}, please request a new one.".format(user.api_key_expires_at),
         )
 
-    if not any(scope in user.scopes for scope in scopes):
+    if not user.is_master and not any(scope in user.scopes for scope in scopes):
         logger.warning("Insufficient permissions. Http 403 Forbidden", extra={
             "required_scopes": [str(s) for s in scopes],
             "user_scopes": [str(s) for s in user.scopes],
