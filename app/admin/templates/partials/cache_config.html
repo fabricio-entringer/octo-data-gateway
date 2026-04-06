@@ -1,0 +1,114 @@
+<!-- cache_config.html — TTL configuration + cache status -->
+<div id="cache-config">
+
+  <!-- TTL Configuration -->
+  <div class="mb-6">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">TTL Configuration</h3>
+    <form hx-post="/admin/cache/update-ttl" hx-target="#cache-config" hx-swap="outerHTML">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+              <th class="px-4 py-3">Endpoint</th>
+              <th class="px-4 py-3">Current TTL</th>
+              <th class="px-4 py-3">New TTL</th>
+              <th class="px-4 py-3">Unit</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for endpoint, ttl in ttl_config.items() %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium text-gray-900">{{ endpoint }}</td>
+              <td class="px-4 py-3 text-gray-600">
+                {% if ttl >= 3600 %}{{ (ttl / 3600)|round(1) }}h
+                {% elif ttl >= 60 %}{{ (ttl / 60)|round(1) }}m
+                {% else %}{{ ttl }}s{% endif %}
+              </td>
+              <td class="px-4 py-3">
+                <input type="number" name="ttl_{{ endpoint }}" value="{{ ttl }}" min="1"
+                       class="w-24 rounded border px-2 py-1 text-sm" />
+              </td>
+              <td class="px-4 py-3 text-xs text-gray-500">seconds</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-end mt-3">
+        <button type="submit"
+                class="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-sky-700">
+          Save All
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Cache Status -->
+  <div hx-get="/admin/partials/cache-stats" hx-trigger="every 10s" hx-swap="outerHTML" id="cache-stats">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Redis Cache Status</h3>
+
+    <!-- Connection badge -->
+    <div class="mb-4">
+      {% if cache_stats.connected %}
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+        <span class="h-2 w-2 rounded-full bg-green-500"></span> Connected
+      </span>
+      {% else %}
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+        <span class="h-2 w-2 rounded-full bg-red-500"></span> Disconnected
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs text-gray-500">Total Keys</p>
+        <p class="text-xl font-bold text-gray-900">{{ cache_stats.total_keys }}</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs text-gray-500">Memory Used</p>
+        <p class="text-xl font-bold text-gray-900">{{ cache_stats.memory_used }}</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs text-gray-500">Endpoint Prefixes</p>
+        <p class="text-xl font-bold text-gray-900">{{ cache_stats.endpoint_counts | length }}</p>
+      </div>
+    </div>
+
+    {% if cache_stats.endpoint_counts %}
+    <div class="overflow-x-auto mb-4">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+            <th class="px-4 py-2">Endpoint</th>
+            <th class="px-4 py-2">Entries</th>
+            <th class="px-4 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for ep, count in cache_stats.endpoint_counts.items() %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 text-gray-900">{{ ep }}</td>
+            <td class="px-4 py-2 text-gray-600">{{ count }}</td>
+            <td class="px-4 py-2">
+              <button hx-post="/admin/cache/flush/{{ ep }}" hx-target="#cache-config" hx-swap="outerHTML"
+                      hx-confirm="Flush all {{ ep }} cache entries?"
+                      class="text-xs font-medium text-red-600 hover:text-red-800">Flush</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="flex justify-end">
+      <button hx-post="/admin/cache/flush" hx-target="#cache-config" hx-swap="outerHTML"
+              hx-confirm="Flush all cache entries? This cannot be undone."
+              class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-red-700">
+        Flush All Cache
+      </button>
+    </div>
+  </div>
+
+</div>

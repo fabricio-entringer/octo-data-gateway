@@ -1,0 +1,97 @@
+<!-- Charts — 2×2 grid with Chart.js -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+  <!-- Requests Over Time (line) -->
+  <div class="bg-white rounded-xl shadow-sm border p-5">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Requests Over Time (7 days)</h3>
+    <canvas id="chartRequestsOverTime" height="200"></canvas>
+  </div>
+
+  <!-- Requests per Endpoint (doughnut) -->
+  <div class="bg-white rounded-xl shadow-sm border p-5">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Requests per Endpoint</h3>
+    <canvas id="chartEndpoints" height="200"></canvas>
+  </div>
+
+  <!-- Status Code Distribution (bar) -->
+  <div class="bg-white rounded-xl shadow-sm border p-5">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Status Code Distribution</h3>
+    <canvas id="chartStatusCodes" height="200"></canvas>
+  </div>
+
+  <!-- Top Users (horizontal bar) -->
+  <div class="bg-white rounded-xl shadow-sm border p-5">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Top Users</h3>
+    <canvas id="chartTopUsers" height="200"></canvas>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ocean = { light: "#7dd3fc", mid: "#38bdf8", base: "#0ea5e9", dark: "#0284c7" };
+
+  // ── Requests Over Time (line) ──
+  var rotLabels = {{ stats.requests_over_time | map(attribute='timestamp') | list | tojson }};
+  var rotData   = {{ stats.requests_over_time | map(attribute='count') | list | tojson }};
+  new Chart(document.getElementById("chartRequestsOverTime"), {
+    type: "line",
+    data: {
+      labels: rotLabels,
+      datasets: [{
+        label: "Requests",
+        data: rotData,
+        borderColor: ocean.base,
+        backgroundColor: ocean.light + "40",
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: ocean.dark
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  // ── Requests per Endpoint (doughnut) ──
+  var epLabels = {{ stats.requests_per_endpoint | map(attribute='endpoint') | list | tojson }};
+  var epData   = {{ stats.requests_per_endpoint | map(attribute='request_count') | list | tojson }};
+  var epColors = epLabels.map(function (_, i) {
+    var palette = ["#0ea5e9","#0284c7","#38bdf8","#7dd3fc","#0369a1","#075985","#bae6fd","#e0f2fe"];
+    return palette[i % palette.length];
+  });
+  new Chart(document.getElementById("chartEndpoints"), {
+    type: "doughnut",
+    data: { labels: epLabels, datasets: [{ data: epData, backgroundColor: epColors }] },
+    options: { responsive: true, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } }
+  });
+
+  // ── Status Code Distribution (bar) ──
+  var scLabels = {{ stats.status_code_distribution.keys() | list | tojson }};
+  var scData   = {{ stats.status_code_distribution.values() | list | tojson }};
+  var scColors = scLabels.map(function (c) {
+    if (c.startsWith("2")) return "#22c55e";
+    if (c.startsWith("4")) return "#eab308";
+    if (c.startsWith("5")) return "#ef4444";
+    return "#94a3b8";
+  });
+  new Chart(document.getElementById("chartStatusCodes"), {
+    type: "bar",
+    data: {
+      labels: scLabels,
+      datasets: [{ label: "Count", data: scData, backgroundColor: scColors }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  // ── Top Users (horizontal bar) ──
+  var tuLabels = {{ stats.top_users | map(attribute='user_name') | list | tojson }};
+  var tuData   = {{ stats.top_users | map(attribute='request_count') | list | tojson }};
+  new Chart(document.getElementById("chartTopUsers"), {
+    type: "bar",
+    data: {
+      labels: tuLabels,
+      datasets: [{ label: "Requests", data: tuData, backgroundColor: ocean.base }]
+    },
+    options: { indexAxis: "y", responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+  });
+});
+</script>

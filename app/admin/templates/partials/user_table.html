@@ -1,0 +1,9 @@
+<!-- user_table.html — table body for HTMX swap -->
+{% for user in users %}
+  {% include "partials/user_row.html" %}
+{% endfor %}
+{% if not users %}
+<tr>
+  <td colspan="6" class="py-8 text-center text-gray-400">No users found</td>
+</tr>
+{% endif %}
