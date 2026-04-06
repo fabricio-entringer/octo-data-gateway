@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-4">
+  <p class="text-sm text-gray-500">Manage API gateway users and keys</p>
+  <button hx-get="/admin/partials/user-form" hx-target="#modal-container" hx-swap="innerHTML"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-sky-700">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    New User
+  </button>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead>
+      <tr class="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+        <th class="px-4 py-3">Name</th>
+        <th class="px-4 py-3">Scopes</th>
+        <th class="px-4 py-3">Key Status</th>
+        <th class="px-4 py-3">API Key</th>
+        <th class="px-4 py-3">Created</th>
+        <th class="px-4 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="user-table-body" class="divide-y">
+      {% include "partials/user_table.html" %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal container for create/edit forms -->
+<div id="modal-container"></div>
+
+{% endblock %}

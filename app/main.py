@@ -1,14 +1,15 @@
-import importlib
+from importlib.metadata import metadata, version as get_version
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from importlib_metadata import metadata
+from fastapi.staticfiles import StaticFiles
 
 from app.core.cache import get_cache_client
 from app.core.models import Metadata
 from app.database.models import UserUsage
 
 from .api.routes import api_v1_router
+from app.admin import admin_router
 from app.core.logging_config import Logger
 import uuid
 from app.core.context import request_metadata_var
@@ -31,7 +32,7 @@ async def lifespan(app: FastAPI):
 api = FastAPI(
     title="Octo Data Gateway API",
     description="API for accessing external data sources",
-    version=importlib.metadata.version("octo-data-gateway"),
+    version=get_version("octo-data-gateway"),
     lifespan=lifespan,
 )
 
@@ -86,6 +87,8 @@ def register_user_usage(usage: UserUsage):
     user_usage.log_user_usage(usage)
 
 api.include_router(api_v1_router, prefix="/api/v1")
+api.include_router(admin_router)
+api.mount("/admin/static", StaticFiles(directory="app/admin/static"), name="admin-static")
 
 health = HealthCheck()
 health_router = create_fastapi_healthcheck(health)
