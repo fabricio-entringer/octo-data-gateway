@@ -1,11 +1,15 @@
-import importlib
-from fastapi import FastAPI, Request
-from importlib_metadata import metadata
+from importlib.metadata import metadata, version as get_version
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+
+from app.core.cache import get_cache_client
 from app.core.models import Metadata
 from app.database.models import UserUsage
 
 from .api.routes import api_v1_router
+from app.admin import admin_router
 from app.core.logging_config import Logger
 import uuid
 from app.core.context import request_metadata_var
@@ -15,10 +19,21 @@ from rest_health.adapters.fastapi import create_fastapi_healthcheck
 
 Logger.setup_logging()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    cache = get_cache_client()
+    await cache.connect()
+    app.state.cache = cache
+    yield
+    await cache.disconnect()
+
+
 api = FastAPI(
     title="Octo Data Gateway API",
     description="API for accessing external data sources",
-    version=importlib.metadata.version("octo-data-gateway")
+    version=get_version("octo-data-gateway"),
+    lifespan=lifespan,
 )
 
 @api.middleware("http")
@@ -34,7 +49,7 @@ async def add_request_id_and_logging(request: Request, call_next):
     logger = Logger.get_logger()
     logger.info("Incoming request", extra={"method": request.method})
     try:
-        
+
         response = await call_next(request)
         logger.info("Request processed successfully", extra={
             "method": request.method,
@@ -53,10 +68,10 @@ async def add_request_id_and_logging(request: Request, call_next):
             is_success=metadata.is_successful
         )
         background_tasks.add_task(register_user_usage, user_usage)
-        response.background = background_tasks        
+        response.background = background_tasks
 
         return response
-    
+
     except Exception as e:
         logger.error("Unhandled exception in middleware", extra={
             "error": str(e),
@@ -70,8 +85,10 @@ async def add_request_id_and_logging(request: Request, call_next):
 def register_user_usage(usage: UserUsage):
     from app.database import user_usage
     user_usage.log_user_usage(usage)
-    
+
 api.include_router(api_v1_router, prefix="/api/v1")
+api.include_router(admin_router)
+api.mount("/admin/static", StaticFiles(directory="app/admin/static"), name="admin-static")
 
 health = HealthCheck()
 health_router = create_fastapi_healthcheck(health)

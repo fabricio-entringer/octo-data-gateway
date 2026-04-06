@@ -95,7 +95,7 @@ class Metadata(BaseModel):
         Returns the application version.
         """
 
-        return importlib.metadata.version("external-data-gateway")
+        return importlib.metadata.version("octo-data-gateway")
     
     def finish_successful_request(self, error_info: ErrorDetail = None):
         """
