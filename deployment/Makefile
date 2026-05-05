@@ -30,11 +30,11 @@ help:
 
 # Start services in background
 start:
-	docker-compose up -d
+	docker compose up -d
 
 # Stop services
 stop:
-	docker-compose down
+	docker compose down
 
 # Restart services
 restart: stop start
@@ -42,19 +42,19 @@ restart: stop start
 
 # Show logs from all services (follow mode)
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # Show app logs (follow mode)
 logs-app:
-	docker-compose logs -f app
+	docker compose logs -f octo-data-gateway
 
 # Show Redis logs (follow mode)
 logs-redis:
-	docker-compose logs -f redis
+	docker compose logs -f redis
 
 # Show container status
 status:
-	docker-compose ps
+	docker compose ps
 
 # Alias for status
 ps: status
@@ -62,14 +62,14 @@ ps: status
 # Check health of services
 health:
 	@echo "Testing Redis health..."
-	docker-compose exec redis redis-cli ping || echo "Redis not responding"
+	docker compose exec redis redis-cli ping || echo "Redis not responding"
 	@echo ""
 	@echo "Testing App health..."
-	docker-compose exec app curl -s http://localhost:8000/api/v1/health || echo "App not responding"
+	docker compose exec octo-data-gateway curl -s http://localhost:8998/api/v1/health || echo "App not responding"
 
 # Pull latest image from registry
 pull:
-	docker-compose pull
+	docker compose pull
 
 # Update: pull image and restart
 update: pull restart
@@ -77,7 +77,7 @@ update: pull restart
 
 # Clean: stop services and remove containers
 clean:
-	docker-compose down
+	docker compose down
 	@echo "Services cleaned up"
 
 # Remove volumes (WARNING: data loss)
@@ -86,7 +86,7 @@ rm-volumes:
 	@read -p "Are you sure? [y/N]: " -n 1 -r; \
 	echo ""; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker-compose down -v; \
+		docker compose down -v; \
 		echo "Volumes removed"; \
 	else \
 		echo "Cancelled"; \
@@ -103,21 +103,21 @@ env:
 
 # Development targets
 build:
-	docker-compose build
+	docker compose build
 
 down:
-	docker-compose down
+	docker compose down
 
 logs-tail-50:
-	docker-compose logs --tail 50
+	docker compose logs --tail 50
 
 logs-app-tail-50:
-	docker-compose logs --tail 50 app
+	docker compose logs --tail 50 octo-data-gateway
 
 # View running processes in app container
 exec-bash:
-	docker-compose exec app /bin/bash
+	docker compose exec octo-data-gateway /bin/bash
 
 # View Redis CLI
 redis-cli:
-	docker-compose exec redis redis-cli
+	docker compose exec redis redis-cli
