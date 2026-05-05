@@ -1,0 +1,50 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  octo-data-gateway:
+    image: entringer/octo-data-gateway:latest
+    restart: unless-stopped
+    ports:
+      - "8998:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - internal-network
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8998/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+networks:
+  internal-network:
+    driver: bridge
+    internal: true
+
+  app-network:
+    external: true
+
+volumes:
+  redis-data:
