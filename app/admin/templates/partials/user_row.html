@@ -1,0 +1,70 @@
+<!-- user_row.html — single table row for a user -->
+{% set scope_colors = {
+  "MASTER": "bg-red-100 text-red-700",
+  "ADMIN": "bg-amber-100 text-amber-700",
+  "BITCOIN": "bg-blue-100 text-blue-700",
+  "EMAIL": "bg-green-100 text-green-700",
+  "IBAN": "bg-purple-100 text-purple-700",
+  "EXCHANGE_RATES": "bg-teal-100 text-teal-700"
+} %}
+<tr class="hover:bg-gray-50">
+  <td class="py-3 pr-4">
+    <div class="font-medium text-gray-900">{{ user.name }}</div>
+    <div class="text-xs text-gray-500">{{ user.email or "—" }}</div>
+  </td>
+  <td class="py-3 pr-4">
+    <div class="flex flex-wrap gap-1">
+      {% for scope in user.scopes %}
+      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ scope_colors.get(scope, 'bg-gray-100 text-gray-700') }}">
+        {{ scope }}
+      </span>
+      {% endfor %}
+    </div>
+  </td>
+  <td class="py-3 pr-4">
+    {% if user.api_key_expires_at is none %}
+      <span class="text-xs text-gray-400">Never expires</span>
+    {% elif user.is_valid %}
+      <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Active</span>
+    {% else %}
+      <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Expired {{ user.api_key_expires_at.strftime('%Y-%m-%d') if user.api_key_expires_at else '' }}</span>
+    {% endif %}
+  </td>
+  <td class="py-3 pr-4">
+    <div class="flex items-center gap-1">
+      <code class="text-xs text-gray-500 bg-gray-100 rounded px-1.5 py-0.5 max-w-[120px] truncate">{{ user.api_key[:12] }}…</code>
+      <button onclick="copyToClipboard('{{ user.api_key }}', this)"
+              class="text-xs text-sky-600 hover:text-sky-800 font-medium">Copy</button>
+    </div>
+  </td>
+  <td class="py-3 text-xs text-gray-500">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '—' }}</td>
+  <td class="py-3 pl-2">
+    <div class="flex items-center gap-2">
+      <button hx-get="/admin/partials/user-form/{{ user.user_id }}" hx-target="#modal-container" hx-swap="innerHTML"
+              class="text-xs font-medium text-sky-600 hover:text-sky-800">Edit</button>
+      <button onclick="document.getElementById('renew-modal-{{ user.user_id }}').classList.remove('hidden')"
+              class="text-xs font-medium text-amber-600 hover:text-amber-800">Renew</button>
+      <button hx-delete="/admin/users/{{ user.user_id }}" hx-target="#user-table-body" hx-swap="innerHTML"
+              hx-confirm="Delete user {{ user.name }}? This cannot be undone."
+              class="text-xs font-medium text-red-600 hover:text-red-800">Delete</button>
+    </div>
+    <!-- Renew Key Modal (inline) -->
+    <div id="renew-modal-{{ user.user_id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-semibold mb-4">Renew API Key — {{ user.name }}</h3>
+        <form hx-post="/admin/users/{{ user.user_id }}/renew-key" hx-target="#user-table-body" hx-swap="innerHTML">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Extend by (days)</label>
+          <input type="number" name="days_valid" value="30" min="1" class="w-full rounded-lg border px-3 py-2 text-sm mb-3" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">Or set expiry date</label>
+          <input type="datetime-local" name="expires_at" class="w-full rounded-lg border px-3 py-2 text-sm mb-4" />
+          <div class="flex justify-end gap-2">
+            <button type="button" onclick="this.closest('[id^=renew-modal]').classList.add('hidden')"
+                    class="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50">Cancel</button>
+            <button type="submit" onclick="this.closest('[id^=renew-modal]').classList.add('hidden')"
+                    class="px-3 py-1.5 text-sm rounded-lg bg-amber-500 text-white hover:bg-amber-600">Renew</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </td>
+</tr>

@@ -1,0 +1,71 @@
+<!-- log_table.html — paginated log rows -->
+{% set status_colors = {
+  "2": "bg-green-100 text-green-700",
+  "4": "bg-yellow-100 text-yellow-700",
+  "5": "bg-red-100 text-red-700",
+} %}
+
+<table class="min-w-full text-sm">
+  <thead>
+    <tr class="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+      <th class="px-4 py-3">Timestamp</th>
+      <th class="px-4 py-3">User</th>
+      <th class="px-4 py-3">Endpoint</th>
+      <th class="px-4 py-3">Method</th>
+      <th class="px-4 py-3">Status</th>
+      <th class="px-4 py-3">Time (ms)</th>
+      <th class="px-4 py-3">Success</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y">
+    {% for log in logs %}
+    <tr class="hover:bg-gray-50">
+      <td class="px-4 py-2 text-xs text-gray-500 whitespace-nowrap">{{ log.get("timestamp", "—")[:19] }}</td>
+      <td class="px-4 py-2 text-gray-900 text-xs">{{ log.get("user_id", "—")[:8] }}…</td>
+      <td class="px-4 py-2 text-gray-700 text-xs max-w-[200px] truncate">{{ log.get("endpoint", "—") }}</td>
+      <td class="px-4 py-2">
+        <span class="text-xs font-medium {% if log.get('method') == 'GET' %}text-sky-600{% elif log.get('method') == 'POST' %}text-green-600{% elif log.get('method') == 'DELETE' %}text-red-600{% else %}text-gray-600{% endif %}">
+          {{ log.get("method", "—") }}
+        </span>
+      </td>
+      <td class="px-4 py-2">
+        {% set code_str = log.get("status_code", 0)|string %}
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ status_colors.get(code_str[:1], 'bg-gray-100 text-gray-700') }}">
+          {{ log.get("status_code", "—") }}
+        </span>
+      </td>
+      <td class="px-4 py-2 text-xs text-gray-600">{{ "%.1f"|format(log.get("response_time_ms", 0)) }}</td>
+      <td class="px-4 py-2">
+        {% if log.get("is_success") %}
+          <span class="text-green-500">✓</span>
+        {% else %}
+          <span class="text-red-500">✗</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    {% if not logs %}
+    <tr><td colspan="7" class="py-8 text-center text-gray-400">No log records match filters</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<!-- Pagination -->
+{% if total > 0 %}
+<div class="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-500">
+  <span>Showing {{ ((page - 1) * per_page) + 1 }}–{{ [page * per_page, total] | min }} of {{ total }} entries</span>
+  <div class="flex gap-2">
+    {% if page > 1 %}
+    <button hx-get="/admin/partials/log-table?page={{ page - 1 }}&user_id={{ filters.user_id or '' }}&endpoint={{ filters.endpoint or '' }}&status_code={{ filters.status_code or '' }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}"
+            hx-target="#log-table" hx-swap="innerHTML"
+            class="rounded border px-3 py-1 hover:bg-gray-50">Previous</button>
+    {% endif %}
+    <span class="px-2 py-1">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <button hx-get="/admin/partials/log-table?page={{ page + 1 }}&user_id={{ filters.user_id or '' }}&endpoint={{ filters.endpoint or '' }}&status_code={{ filters.status_code or '' }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}"
+            hx-target="#log-table" hx-swap="innerHTML"
+            class="rounded border px-3 py-1 hover:bg-gray-50">Next</button>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

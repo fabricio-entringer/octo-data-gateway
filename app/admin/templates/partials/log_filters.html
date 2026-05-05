@@ -1,0 +1,59 @@
+<!-- log_filters.html — horizontal filter bar -->
+<div class="bg-white rounded-xl shadow-sm border p-4 mb-4">
+  <div class="flex flex-wrap items-end gap-3">
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">User</label>
+      <select name="user_id" class="rounded border-gray-300 text-sm py-1.5 px-2 min-w-[140px]">
+        <option value="">All Users</option>
+        {% for u in all_users %}
+        <option value="{{ u.user_id }}" {% if filters.user_id == u.user_id %}selected{% endif %}>{{ u.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">Endpoint</label>
+      <select name="endpoint" class="rounded border-gray-300 text-sm py-1.5 px-2 min-w-[140px]">
+        <option value="">All Endpoints</option>
+        {% for ep in endpoints %}
+        <option value="{{ ep }}" {% if filters.endpoint == ep %}selected{% endif %}>{{ ep }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">Status Code</label>
+      <select name="status_code" class="rounded border-gray-300 text-sm py-1.5 px-2">
+        <option value="">All</option>
+        {% for code in [200, 201, 202, 206, 400, 401, 403, 404, 500] %}
+        <option value="{{ code }}" {% if filters.status_code == code %}selected{% endif %}>{{ code }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
+      <input type="date" name="date_from" value="{{ filters.date_from or '' }}"
+             class="rounded border-gray-300 text-sm py-1.5 px-2" />
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
+      <input type="date" name="date_to" value="{{ filters.date_to or '' }}"
+             class="rounded border-gray-300 text-sm py-1.5 px-2" />
+    </div>
+
+    <button hx-get="/admin/partials/log-table" hx-target="#log-table" hx-swap="innerHTML"
+            hx-include="[name]"
+            class="inline-flex items-center gap-1 rounded-lg bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700">
+      Apply
+    </button>
+
+    <a href="/admin/logs"
+       class="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+      Clear
+    </a>
+
+  </div>
+</div>

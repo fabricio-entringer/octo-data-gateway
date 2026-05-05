@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Request Logs{% endblock %}
+{% block page_title %}Request Logs{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-4">
+  <p class="text-sm text-gray-500">API request audit trail</p>
+  <a href="/admin/logs/export?user_id={{ filters.user_id or '' }}&endpoint={{ filters.endpoint or '' }}&status_code={{ filters.status_code or '' }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}"
+     class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    Export CSV
+  </a>
+</div>
+
+{% include "partials/log_filters.html" %}
+
+<div class="bg-white rounded-xl shadow-sm border overflow-x-auto" id="log-table">
+  {% include "partials/log_table.html" %}
+</div>
+
+{% endblock %}

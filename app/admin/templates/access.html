@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Access Rights{% endblock %}
+{% block page_title %}Access Rights{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+  <div class="rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">
+    <strong>Scopes</strong> control which API endpoints a user can access. Toggle switches to grant or revoke permissions instantly. Use templates for quick bulk assignment.
+  </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border">
+  {% include "partials/access_matrix.html" %}
+</div>
+
+{% endblock %}
